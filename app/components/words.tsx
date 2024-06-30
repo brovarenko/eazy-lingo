@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/carousel';
 import { Card, CardContent } from '@/components/ui/card';
 import { type CarouselApi } from '@/components/ui/carousel';
+import { Progress } from '@/components/ui/progress';
 
 interface Word {
   id: number;
@@ -26,29 +27,18 @@ export default function Words() {
   const [score, setScore] = useState(0);
   const { toast } = useToast();
   const [api, setApi] = useState<CarouselApi>();
+  const [progress, setProgress] = useState(13);
 
   useEffect(() => {
     async function fetchWords() {
       const response = await fetch('/api/words');
       const data = await response.json();
       setWords(data);
-      console.log(data);
+
       setCurrentWord(data[0]);
     }
     fetchWords();
   }, []);
-
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    api.on('select', () => {
-      toast({
-        description: 'Correct',
-      });
-    });
-  }, [api]);
 
   const checkAnswer = () => {
     if (
@@ -60,6 +50,7 @@ export default function Words() {
         description: 'Correct',
       });
     }
+    setProgress((prev) => prev + 100 / words.length);
     setUserInput('');
     const nextIndex = words.indexOf(currentWord!) + 1;
     if (nextIndex < words.length) {
@@ -86,25 +77,7 @@ export default function Words() {
     <div className='flex justify-center items-center h-screen'>
       <div className='text-center'>
         <h1 className='text-2xl font-bold mb-4'>{currentWord.english}</h1>
-        <Carousel setApi={setApi} className='w-full max-w-xs'>
-          <CarouselContent>
-            {words.map((word, index) => (
-              <CarouselItem key={index}>
-                <div className='p-1'>
-                  <Card>
-                    <CardContent className='flex aspect-square items-center justify-center p-6'>
-                      <span className='text-4xl font-semibold'>
-                        {word.english}
-                      </span>
-                    </CardContent>
-                  </Card>
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
+
         <input
           type='text'
           value={userInput}
@@ -117,6 +90,7 @@ export default function Words() {
         >
           check
         </button>
+        <Progress value={progress} className='w-[100%]' />
       </div>
     </div>
   );

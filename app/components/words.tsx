@@ -38,7 +38,6 @@ export default function Words() {
       const response = await fetch('/api/words');
       const data = await response.json();
       setWords(data);
-
       setCurrentWord(data[0]);
     }
     fetchWords();
@@ -83,7 +82,7 @@ export default function Words() {
 
   return (
     <div className='flex justify-center items-center '>
-      <div className='text-center w-full'>
+      <div className='text-center '>
         <Card className='m-2'>
           <CardHeader>
             <CardTitle>{currentWord.english}</CardTitle>

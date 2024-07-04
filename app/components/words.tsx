@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import WordSelector from './word-selector';
 
 interface Word {
   id: number;
@@ -28,10 +29,14 @@ export default function Words() {
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [userInput, setUserInput] = useState('');
   const [score, setScore] = useState(0);
-  const { toast } = useToast();
 
+  const [isSelecting, setIsSelecting] = useState(true);
+  const [selectedWords, setSelectedWords] = useState<Word[]>([]);
   const [progress, setProgress] = useState(13);
   const [falseValue, setFalseValue] = useState(false);
+  const [isFlipped, setIsFlipped] = useState(true);
+
+  const { toast } = useToast();
 
   useEffect(() => {
     async function fetchWords() {
@@ -52,13 +57,13 @@ export default function Words() {
       toast({
         description: 'Correct',
       });
-
-      setProgress((prev) => prev + 100 / words.length);
+      setIsFlipped(true);
+      setProgress((prev) => prev + 100 / selectedWords.length);
       setUserInput('');
       setFalseValue(false);
-      const nextIndex = words.indexOf(currentWord!) + 1;
-      if (nextIndex < words.length) {
-        setCurrentWord(words[nextIndex]);
+      const nextIndex = selectedWords.indexOf(currentWord!) + 1;
+      if (nextIndex < selectedWords.length) {
+        setCurrentWord(selectedWords[nextIndex]);
       } else {
         setCurrentWord(null);
       }
@@ -67,13 +72,33 @@ export default function Words() {
     }
   };
 
+  const startLearning = () => {
+    setCurrentWord(selectedWords[0]);
+    setIsSelecting(false);
+  };
+
+  if (isSelecting) {
+    return (
+      <div className='flex justify-center items-center h-screen dark:bg-gray-900'>
+        <WordSelector words={words} onSelectionChange={setSelectedWords} />
+        <button
+          onClick={startLearning}
+          className='bg-blue-500 text-white p-2 rounded mt-4'
+          disabled={selectedWords.length === 0}
+        >
+          start
+        </button>
+      </div>
+    );
+  }
+
   if (!currentWord) {
     return (
       <div className='flex justify-center items-center h-screen'>
         <div className='text-center'>
-          <h1 className='text-3xl font-bold'>Вы закончили!</h1>
+          <h1 className='text-3xl font-bold'>Finish!</h1>
           <p className='mt-4'>
-            Ваш результат: {score} из {words.length}
+            Your score: {score} из {selectedWords.length}
           </p>
         </div>
       </div>
@@ -85,7 +110,14 @@ export default function Words() {
       <div className='text-center '>
         <Card className='m-2'>
           <CardHeader>
-            <CardTitle>{currentWord.english}</CardTitle>
+            <CardTitle
+              className='cursor-pointer mb-4 p-4 border rounded dark:bg-gray-800 dark:border-gray-700'
+              onClick={() => {
+                setIsFlipped(!isFlipped);
+              }}
+            >
+              {isFlipped ? currentWord.english : currentWord.german}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <Input

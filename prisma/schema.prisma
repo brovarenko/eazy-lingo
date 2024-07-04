@@ -14,7 +14,9 @@ datasource db {
 }
 
 model Word {
-  id       Int    @id @default(autoincrement())
-  english  String
-  german   String
+  id        Int    @id @default(autoincrement())
+  english   String
+  german    String
+  thirdForm String
+  perfekt   String
 }

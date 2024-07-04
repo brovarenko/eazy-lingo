@@ -1,5 +1,6 @@
 import { FC } from 'react';
 import Words from '../../components/words';
+import WordSelector from '@/app/components/word-selector';
 
 interface pageProps {}
 

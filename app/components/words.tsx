@@ -24,6 +24,7 @@ interface Word {
   id: number;
   english: string;
   german: string;
+  perfekt: string;
 }
 
 export default function Words() {
@@ -37,6 +38,7 @@ export default function Words() {
   const [progress, setProgress] = useState(13);
   const [falseValue, setFalseValue] = useState(false);
   const [isFlipped, setIsFlipped] = useState(true);
+  const [tense, setTense] = useState<'present' | 'perfect'>('present');
 
   const { toast } = useToast();
 
@@ -53,7 +55,8 @@ export default function Words() {
   const checkAnswer = () => {
     if (
       currentWord &&
-      userInput.trim().toLowerCase() === currentWord.german.toLowerCase()
+      userInput.trim().toLowerCase() ===
+        currentWord[tense === 'present' ? 'german' : 'perfekt'].toLowerCase()
     ) {
       setScore(score + 1);
       toast({
@@ -111,29 +114,43 @@ export default function Words() {
       </div>
     );
   }
-
+  console.log(tense);
   return (
     <div className='flex justify-center items-center '>
       <div className='text-center '>
         <Card className='m-2'>
           <CardHeader>
-            <RadioGroup defaultValue='option-one'>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='option-one' id='option-one' />
-                <Label htmlFor='option-one'>Option One</Label>
-              </div>
-              <div className='flex items-center space-x-2'>
-                <RadioGroupItem value='option-two' id='option-two' />
-                <Label htmlFor='option-two'>Option Two</Label>
-              </div>
-            </RadioGroup>
+            <div className='mb-4'>
+              <label className='mr-4'>
+                <input
+                  type='radio'
+                  value='present'
+                  checked={tense === 'present'}
+                  onChange={() => setTense('present')}
+                  className='mr-2'
+                />
+                present
+              </label>
+              <label>
+                <input
+                  type='radio'
+                  value='perfect'
+                  checked={tense === 'perfect'}
+                  onChange={() => setTense('perfect')}
+                  className='mr-2'
+                />
+                perfect
+              </label>
+            </div>
             <CardTitle
               className='cursor-pointer mb-4 p-4 border rounded dark:bg-gray-800 dark:border-gray-700'
               onClick={() => {
                 setIsFlipped(!isFlipped);
               }}
             >
-              {isFlipped ? currentWord.english : currentWord.german}
+              {isFlipped
+                ? currentWord.english
+                : currentWord[tense === 'present' ? 'german' : 'perfekt']}
             </CardTitle>
           </CardHeader>
           <CardContent>

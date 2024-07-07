@@ -5,6 +5,7 @@ interface Word {
   id: number;
   english: string;
   german: string;
+  perfekt: string;
 }
 
 interface WordSelectorProps {

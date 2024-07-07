@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -65,7 +67,8 @@ export default function Words() {
       if (nextIndex < selectedWords.length) {
         setCurrentWord(selectedWords[nextIndex]);
       } else {
-        setCurrentWord(null);
+        //setCurrentWord(null);
+        setCurrentWord(selectedWords[0]);
       }
     } else {
       setFalseValue(true);
@@ -75,6 +78,10 @@ export default function Words() {
   const startLearning = () => {
     setCurrentWord(selectedWords[0]);
     setIsSelecting(false);
+  };
+
+  const stopLearning = () => {
+    setCurrentWord(null);
   };
 
   if (isSelecting) {
@@ -110,6 +117,16 @@ export default function Words() {
       <div className='text-center '>
         <Card className='m-2'>
           <CardHeader>
+            <RadioGroup defaultValue='option-one'>
+              <div className='flex items-center space-x-2'>
+                <RadioGroupItem value='option-one' id='option-one' />
+                <Label htmlFor='option-one'>Option One</Label>
+              </div>
+              <div className='flex items-center space-x-2'>
+                <RadioGroupItem value='option-two' id='option-two' />
+                <Label htmlFor='option-two'>Option Two</Label>
+              </div>
+            </RadioGroup>
             <CardTitle
               className='cursor-pointer mb-4 p-4 border rounded dark:bg-gray-800 dark:border-gray-700'
               onClick={() => {
@@ -134,7 +151,10 @@ export default function Words() {
             <Button onClick={checkAnswer} className='m-4'>
               check
             </Button>
-            <Progress value={progress} className='w-[100%]' />
+            <Button onClick={stopLearning} className='m-4'>
+              stop
+            </Button>
+            {/* <Progress value={progress} className='w-[100%]' /> */}
           </CardFooter>
         </Card>
       </div>

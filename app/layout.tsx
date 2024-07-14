@@ -3,6 +3,13 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/lib/utils';
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton,
+} from '@clerk/nextjs';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,10 +24,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang='en'>
-      <body className={cn(inter.className, 'dark ')}>
-        {children} <Toaster />
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang='en'>
+        <body className={cn(inter.className, 'dark ')}>
+          {children} <Toaster />
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

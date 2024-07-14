@@ -32,7 +32,6 @@ export default function Words() {
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [userInput, setUserInput] = useState('');
   const [score, setScore] = useState(0);
-
   const [isSelecting, setIsSelecting] = useState(true);
   const [selectedWords, setSelectedWords] = useState<Word[]>([]);
   const [progress, setProgress] = useState(13);
@@ -59,9 +58,6 @@ export default function Words() {
         currentWord[tense === 'present' ? 'german' : 'perfekt'].toLowerCase()
     ) {
       setScore(score + 1);
-      toast({
-        description: 'Correct',
-      });
       setIsFlipped(true);
       setProgress((prev) => prev + 100 / selectedWords.length);
       setUserInput('');
@@ -70,7 +66,6 @@ export default function Words() {
       if (nextIndex < selectedWords.length) {
         setCurrentWord(selectedWords[nextIndex]);
       } else {
-        //setCurrentWord(null);
         setCurrentWord(selectedWords[0]);
       }
     } else {
@@ -114,7 +109,7 @@ export default function Words() {
       </div>
     );
   }
-  console.log(tense);
+
   return (
     <div className='flex justify-center items-center '>
       <div className='text-center '>

@@ -7,7 +7,8 @@ interface pageProps {}
 const page: FC<pageProps> = async ({}) => {
   return (
     <div className='flex '>
-      <Words />
+      {<Words />}
+      <div>Your sets</div>
     </div>
   );
 };

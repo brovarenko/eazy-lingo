@@ -27,5 +27,13 @@ model Set {
   id      Int     @id @default(autoincrement())
   name    String
   words   Word[]
+  userId  String
+  user    User    @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id    String @id
+  email String @unique
+  sets  Set[]
 }
 

@@ -1,9 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 
-const prisma = new PrismaClient();
+import { db } from '@/lib/db';
 
 async function main() {
-  await prisma.word.deleteMany({});
+  await db.word.deleteMany({});
   const words = [
     { english: 'to be', german: 'sein', thirdForm: 'ist', perfekt: 'gewesen' },
     {
@@ -173,7 +173,7 @@ async function main() {
   ];
 
   for (const word of words) {
-    await prisma.word.create({
+    await db.word.create({
       data: word,
     });
   }
@@ -185,5 +185,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await db.$disconnect();
   });

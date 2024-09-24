@@ -26,14 +26,20 @@ export class AppController {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async googleAuth(@Req() req) {
     console.log(2);
-    // Этот маршрут вызовется автоматически, когда пользователь попытается пройти авторизацию через Google
   }
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
   googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    // Этот маршрут вызовется после успешного входа и получения данных от Google
-    const jwt = req.user; // JWT, который мы создали в validate() метода стратегии
-    res.redirect(`http://localhost:3000?token=${jwt}`);
+    const jwt = req.user as string;
+
+    res.cookie('jwt', jwt, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 3600000,
+    });
+
+    res.redirect('http://localhost:3001/');
   }
 }

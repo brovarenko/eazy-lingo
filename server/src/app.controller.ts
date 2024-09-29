@@ -24,9 +24,7 @@ export class AppController {
   @Get('google')
   @UseGuards(AuthGuard('google'))
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async googleAuth(@Req() req) {
-    console.log(2);
-  }
+  async googleAuth(@Req() req) {}
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))

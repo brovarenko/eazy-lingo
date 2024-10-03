@@ -15,10 +15,11 @@ export class AppController {
     return this.authService.login(req.user);
   }
 
-  @UseGuards(JwtAuthGuard)
+  //@UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Req() req) {
-    return req.user;
+    console.log(req.cookies);
+    return { user: req.user };
   }
 
   @Get('google')
@@ -38,6 +39,6 @@ export class AppController {
       maxAge: 3600000,
     });
 
-    res.redirect('http://localhost:3001/');
+    res.redirect('http://localhost:3001/login');
   }
 }

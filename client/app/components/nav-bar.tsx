@@ -50,12 +50,7 @@ const Navbar: FC<NavbarProps> = async ({}) => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
-      <SignedIn>
-        <UserButton />
-      </SignedIn>
+      <Link href={'/login'}>Login</Link>
     </div>
   );
 };

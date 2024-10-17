@@ -22,8 +22,19 @@ export class AuthService {
   async login(user: any) {
     const payload = { username: user.username, sub: user.userId };
 
+    const access_token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+
+    const refresh_token = this.jwtService.sign(payload, {
+      secret: process.env.JWT_REFRESH_SECRET,
+      expiresIn: '7d',
+    });
+
     return {
-      access_token: this.jwtService.sign(payload),
+      access_token,
+      refresh_token,
     };
   }
 
@@ -40,5 +51,39 @@ export class AuthService {
     const payload = { userId: user.id, email: user.email };
     const jwt = this.jwtService.sign(payload);
     return jwt;
+  }
+
+  verifyRefreshToken(token: string) {
+    try {
+      return this.jwtService.verify(token, {
+        secret: process.env.JWT_REFRESH_SECRET,
+      });
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      throw new Error('Invalid refresh token');
+    }
+  }
+
+  generateAccessToken(payload: any) {
+    return this.jwtService.sign(payload, {
+      secret: process.env.JWT_SECRET,
+      expiresIn: '15m',
+    });
+  }
+  async refreshAccessToken(refreshToken: string) {
+    try {
+      const decoded = this.verifyRefreshToken(refreshToken);
+
+      const payload = { username: decoded.username, sub: decoded.sub };
+
+      const newAccessToken = this.generateAccessToken(payload);
+
+      return {
+        access_token: newAccessToken,
+      };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      throw new Error('Unable to refresh token');
+    }
   }
 }

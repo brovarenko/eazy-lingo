@@ -14,7 +14,6 @@ export function middleware(request: NextRequest) {
   const isPublicRoute = publicRoutes.includes(path);
 
   const jwt = request.cookies.get('jwt')?.value;
-  console.log(jwt);
 
   if (!jwt && !isPublicRoute) {
     return NextResponse.redirect(new URL('/login', request.url));
@@ -23,8 +22,6 @@ export function middleware(request: NextRequest) {
   if (jwt) {
     const decodedToken: JwtPayload = jwtDecode(jwt);
     console.log(decodedToken);
-    const requestHeaders = new Headers(request.headers);
-    requestHeaders.set('Bearer-token', jwt);
   }
 
   return NextResponse.next();

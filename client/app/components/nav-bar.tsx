@@ -13,7 +13,6 @@ import {
   NavigationMenuTrigger,
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
-import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 interface NavbarProps {}
 
@@ -30,21 +29,21 @@ const Navbar: FC<NavbarProps> = async ({}) => {
           <NavigationMenuItem>
             <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
             <NavigationMenuContent>
-              <NavigationMenuLink>
-                <Link
+              <NavigationMenuLink asChild>
+                <a
                   className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                   href={`/home`}
                 >
                   home
-                </Link>
+                </a>
               </NavigationMenuLink>
-              <NavigationMenuLink>
-                <Link
+              <NavigationMenuLink asChild>
+                <a
                   className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                   href={`/learn`}
                 >
                   lern words
-                </Link>
+                </a>
               </NavigationMenuLink>
             </NavigationMenuContent>
           </NavigationMenuItem>

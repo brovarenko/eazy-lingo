@@ -18,6 +18,7 @@ const Profile: FC<LoginProps> = ({}) => {
         credentials: 'include',
       });
       let data = await res.json();
+
       setUser(data);
     }
     fetchPosts();

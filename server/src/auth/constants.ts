@@ -1,4 +1,5 @@
 export const jwtConstants = {
-  secret:
-    'DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.',
+  secret: 'dsfsfesf4r56ygrtgrgfsfertgergef5eght6jyuikfdzdfvrdy8i867uhdxrs',
+  refreshSecret:
+    'dadwdwdfrgrgerghfewfewfwefewfewferfyjukHETR67573ewf445h4htb4tg',
 };

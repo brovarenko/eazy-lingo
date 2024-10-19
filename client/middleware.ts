@@ -2,26 +2,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { jwtDecode } from 'jwt-decode';
 
 interface JwtPayload {
-  userId: String;
-  email: String;
+  userId: string;
+  email: string;
   iat: number;
   exp: number;
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const publicRoutes = ['/login', '/'];
   const path = request.nextUrl.pathname;
   const isPublicRoute = publicRoutes.includes(path);
 
-  const jwt = request.cookies.get('jwt')?.value;
-
-  if (!jwt && !isPublicRoute) {
-    return NextResponse.redirect(new URL('/login', request.url));
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
+  if (isPublicRoute) {
+    return NextResponse.next();
   }
 
-  if (jwt) {
-    const decodedToken: JwtPayload = jwtDecode(jwt);
-    console.log(decodedToken);
+  if (!refreshToken && !isPublicRoute) {
+    return NextResponse.redirect(new URL('/login', request.url));
   }
 
   return NextResponse.next();

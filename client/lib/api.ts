@@ -6,6 +6,10 @@ const api = axios.create({
   withCredentials: true,
 });
 
+export const logout = async () => {
+  await api.post('/auth/logout');
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

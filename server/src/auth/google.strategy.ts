@@ -21,8 +21,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     done: VerifyCallback,
   ): Promise<any> {
     try {
-      const jwt = await this.authService.validateOAuthLogin(profile);
-      done(null, jwt);
+      const user = {
+        sub: profile.id,
+        email: profile.emails[0].value,
+        username: profile.displayName,
+      };
+
+      // Вызываем callback с переданным пользователем
+      done(null, user);
     } catch (err) {
       done(err, false);
     }

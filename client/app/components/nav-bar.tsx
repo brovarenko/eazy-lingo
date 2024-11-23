@@ -1,6 +1,7 @@
+'use client';
 import { LayoutDashboard, Library } from 'lucide-react';
 import { FC } from 'react';
-
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
 import {
@@ -13,17 +14,35 @@ import {
   NavigationMenuTrigger,
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
+import useSWR from 'swr';
+import api, { logout } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { Router } from 'next/router';
 
 interface NavbarProps {}
+const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
-const Navbar: FC<NavbarProps> = async ({}) => {
+const Navbar: FC<NavbarProps> = ({}) => {
+  const { data: user, error } = useSWR(
+    'http://localhost:3000/auth/profile',
+    fetcher
+  );
+  const router = useRouter();
+  const handleLogout = async () => {
+    await logout();
+    console.log('logout');
+    router.push('/login');
+  };
+
+  // if (error) return <div>Error loading user</div>;
+  // if (!user) return <div>Loading...</div>;
+
   return (
     <div className='flex p-3 w-full justify-between items-center h-14 z-50 bg-neutral-900 border border-b-zinc-700 shadow-sm'>
       <div className='flex'>
         <Library color='#04f000' />
         <span className='px-1 text-lg'>EazyLingo</span>
       </div>
-
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -49,7 +68,14 @@ const Navbar: FC<NavbarProps> = async ({}) => {
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      <Link href={'/login'}>Login</Link>
+      {user ? (
+        <div className='flex'>
+          <div className='mr-2'>{user.username}</div>
+          <Button onClick={handleLogout}>Logout</Button>
+        </div>
+      ) : (
+        <Link href={'/login'}>Login</Link>
+      )}
     </div>
   );
 };

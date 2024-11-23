@@ -6,6 +6,6 @@ import { db } from '@/lib/db';
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
   const words = await db.word.findMany();
-  console.log(words);
+
   return NextResponse.json(words);
 }

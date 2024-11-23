@@ -1,6 +1,8 @@
 'use client';
+
 import { FC, useEffect, useState } from 'react';
 import api from '@/lib/api';
+import useSWR from 'swr';
 
 interface LoginProps {}
 interface User {
@@ -8,20 +10,18 @@ interface User {
   iat: number;
   exp: number;
 }
+const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 const Profile: FC<LoginProps> = ({}) => {
-  const [user, setUser] = useState<User | null>(null);
-  useEffect(() => {
-    async function fetchPosts() {
-      const data = await api.get('http://localhost:3000/auth/profile');
-      //let data = await res.json();
+  const { data: user, error } = useSWR(
+    'http://localhost:3000/auth/profile',
+    fetcher
+  );
 
-      setUser(data.data);
-    }
-    fetchPosts();
-  }, []);
+  if (error) return <div>Error loading user</div>;
+  if (!user) return <div>Loading...</div>;
 
-  return <div>{user?.username}</div>;
+  return <h1>Welcome, {user.username}!</h1>;
 };
 
 export default Profile;

@@ -13,7 +13,6 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isPublicRoute = publicRoutes.includes(path);
 
-  const accessToken = request.cookies.get('access_token')?.value;
   const refreshToken = request.cookies.get('refresh_token')?.value;
   if (isPublicRoute) {
     return NextResponse.next();

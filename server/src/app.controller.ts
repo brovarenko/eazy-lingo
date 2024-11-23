@@ -21,6 +21,7 @@ export class AppController {
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
+
     res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -45,17 +46,26 @@ export class AppController {
 
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const jwt = req.user as string;
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
+    const { access_token, refresh_token } = await this.authService.login(
+      req.user,
+    );
 
-    res.cookie('jwt', jwt, {
+    res.cookie('access_token', access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 3600000,
+      maxAge: 60 * 60 * 1000,
     });
 
-    res.redirect('http://localhost:3001/login');
+    res.cookie('refresh_token', refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.redirect('http://localhost:3001/home');
   }
 
   @Post('refresh')
@@ -72,7 +82,7 @@ export class AppController {
       res.cookie('access_token', tokens.access_token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 15 * 60 * 1000,
+        maxAge: 1 * 60 * 1000,
       });
 
       return res.json({ message: 'Token refreshed successfully' });
@@ -80,5 +90,23 @@ export class AppController {
     } catch (error) {
       return res.status(403).json({ message: 'Invalid refresh token' });
     }
+  }
+
+  @Post('logout')
+  logout(@Res() res: Response) {
+    // Clear the cookies
+    res.clearCookie('access_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    res.clearCookie('refresh_token', {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return res.status(200).json({ message: 'Logged out successfully' });
   }
 }

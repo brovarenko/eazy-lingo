@@ -27,10 +27,11 @@ const Navbar: FC<NavbarProps> = ({}) => {
     'http://localhost:3000/auth/profile',
     fetcher
   );
+  console.log(user);
   const router = useRouter();
   const handleLogout = async () => {
     await logout();
-    console.log('logout');
+
     router.push('/login');
   };
 
@@ -70,7 +71,7 @@ const Navbar: FC<NavbarProps> = ({}) => {
       </NavigationMenu>
       {user ? (
         <div className='flex'>
-          <div className='mr-2'>{user.username}</div>
+          <div className='mr-2'>{user.name}</div>
           <Button onClick={handleLogout}>Logout</Button>
         </div>
       ) : (

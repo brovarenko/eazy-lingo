@@ -22,12 +22,11 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   ): Promise<any> {
     try {
       const user = {
-        sub: profile.id,
+        id: profile.id,
         email: profile.emails[0].value,
-        username: profile.displayName,
+        displayName: profile.displayName,
       };
-
-      // Вызываем callback с переданным пользователем
+      console.log(user);
       done(null, user);
     } catch (err) {
       done(err, false);

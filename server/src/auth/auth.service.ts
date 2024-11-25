@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { UsersService } from '../users/users.service';
+import { UserService } from '../user/user.service';
 import { JwtService } from '@nestjs/jwt';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private usersService: UsersService,
+    private usersService: UserService,
     private jwtService: JwtService,
+    private prisma: PrismaService,
   ) {}
 
   async validateUser(username: string, pass: string): Promise<any> {
@@ -19,8 +21,25 @@ export class AuthService {
     return null;
   }
 
-  async login(user: any) {
-    const payload = { username: user.username, sub: user.userId };
+  async login(profile: any) {
+    //console.log(profile);
+    const { id: googleId, email, displayName } = profile;
+
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          googleId,
+          email,
+          name: displayName,
+        },
+      });
+    }
+
+    const payload = { userId: user.id, email: user.email, name: displayName };
 
     const access_token = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
@@ -38,20 +57,20 @@ export class AuthService {
     };
   }
 
-  async validateOAuthLogin(profile: any): Promise<string> {
-    const { id, emails, displayName } = profile;
-    const userEmail = emails[0].value;
+  // async validateOAuthLogin(profile: any): Promise<string> {
+  //   const { id, emails, displayName } = profile;
+  //   const userEmail = emails[0].value;
 
-    const user = {
-      id,
-      email: userEmail,
-      name: displayName,
-    };
+  //   const user = {
+  //     id,
+  //     email: userEmail,
+  //     name: displayName,
+  //   };
 
-    const payload = { userId: user.id, email: user.email };
-    const jwt = this.jwtService.sign(payload);
-    return jwt;
-  }
+  //   const payload = { userId: user.id, email: user.email };
+  //   const jwt = this.jwtService.sign(payload);
+  //   return jwt;
+  // }
 
   verifyRefreshToken(token: string) {
     try {
@@ -70,11 +89,16 @@ export class AuthService {
       expiresIn: '15m',
     });
   }
+
   async refreshAccessToken(refreshToken: string) {
     try {
       const decoded = this.verifyRefreshToken(refreshToken);
 
-      const payload = { username: decoded.username, sub: decoded.sub };
+      const payload = {
+        userId: decoded.id,
+        email: decoded.email,
+        name: decoded.name,
+      };
 
       const newAccessToken = this.generateAccessToken(payload);
 

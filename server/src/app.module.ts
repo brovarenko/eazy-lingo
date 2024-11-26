@@ -7,6 +7,7 @@ import { GoogleStrategy } from './auth/google.strategy';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserController } from './user/user.controller';
+import { SetsModule } from './sets/sets.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { UserController } from './user/user.controller';
     AuthModule,
     UserModule,
     PrismaModule,
+    SetsModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService, GoogleStrategy],

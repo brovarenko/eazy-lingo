@@ -10,6 +10,10 @@ async function bootstrap() {
     methods: 'GET,POST,PUT,DELETE,OPTIONS', // Specify allowed methods
   });
   app.use(cookieParser());
+  app.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+  });
   await app.listen(3000);
 }
 bootstrap();

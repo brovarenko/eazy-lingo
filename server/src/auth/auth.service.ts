@@ -57,21 +57,6 @@ export class AuthService {
     };
   }
 
-  // async validateOAuthLogin(profile: any): Promise<string> {
-  //   const { id, emails, displayName } = profile;
-  //   const userEmail = emails[0].value;
-
-  //   const user = {
-  //     id,
-  //     email: userEmail,
-  //     name: displayName,
-  //   };
-
-  //   const payload = { userId: user.id, email: user.email };
-  //   const jwt = this.jwtService.sign(payload);
-  //   return jwt;
-  // }
-
   verifyRefreshToken(token: string) {
     try {
       return this.jwtService.verify(token, {
@@ -95,7 +80,7 @@ export class AuthService {
       const decoded = this.verifyRefreshToken(refreshToken);
 
       const payload = {
-        userId: decoded.id,
+        userId: decoded.userId,
         email: decoded.email,
         name: decoded.name,
       };

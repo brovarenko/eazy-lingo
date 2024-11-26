@@ -59,4 +59,11 @@ export class SetsService {
       },
     });
   }
+
+  async getUserSets(userId: number) {
+    return this.prisma.set.findMany({
+      where: { userId },
+      include: { words: true },
+    });
+  }
 }

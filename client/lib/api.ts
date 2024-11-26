@@ -10,6 +10,11 @@ export const logout = async () => {
   await api.post('/auth/logout');
 };
 
+export const getUserSets = async () => {
+  const response = await api.get('/sets/user');
+  return response.data;
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

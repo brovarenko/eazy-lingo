@@ -8,17 +8,29 @@ import {
   Body,
   Query,
   ParseIntPipe,
+  UseGuards,
+  Req,
 } from '@nestjs/common';
 import { SetsService } from './sets.service';
 import { CreateSetDto, UpdateSetDto, AddWordDto } from './dto/create-set.dto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('sets')
 export class SetsController {
   constructor(private readonly setsService: SetsService) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get()
   async getAllSets(@Query('isCommon') isCommon: boolean) {
+    console.log('Request reached SetsController');
     return this.setsService.getAllSets(isCommon);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get('user')
+  async getUserSets(@Req() req) {
+    const userId = req.user.userId;
+    return this.setsService.getUserSets(userId);
   }
 
   @Get(':id')

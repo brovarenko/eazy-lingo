@@ -66,6 +66,13 @@ export class UserService {
   }
 
   // Get all sets for a user
+  // async getUserSets(userId: number) {
+  //   return this.prisma.set.findMany({
+  //     where: { userId },
+  //     include: { words: true },
+  //   });
+  // }
+
   async getUserSets(userId: number) {
     return this.prisma.set.findMany({
       where: { userId },

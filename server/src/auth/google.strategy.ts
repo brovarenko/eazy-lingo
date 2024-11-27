@@ -26,7 +26,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
         email: profile.emails[0].value,
         displayName: profile.displayName,
       };
-      console.log(user);
+
       done(null, user);
     } catch (err) {
       done(err, false);

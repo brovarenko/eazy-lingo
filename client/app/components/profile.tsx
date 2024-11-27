@@ -5,11 +5,7 @@ import api from '@/lib/api';
 import useSWR from 'swr';
 
 interface LoginProps {}
-interface User {
-  username: string;
-  iat: number;
-  exp: number;
-}
+
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 const Profile: FC<LoginProps> = ({}) => {

@@ -1,4 +1,5 @@
 'use client';
+
 import { LayoutDashboard, Library } from 'lucide-react';
 import { FC } from 'react';
 import { useRouter } from 'next/navigation';
@@ -14,29 +15,23 @@ import {
   NavigationMenuTrigger,
   NavigationMenuViewport,
 } from '@/components/ui/navigation-menu';
-import useSWR from 'swr';
-import api, { logout } from '@/lib/api';
+
+import { logout, useUser } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { Router } from 'next/router';
 
 interface NavbarProps {}
-const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 const Navbar: FC<NavbarProps> = ({}) => {
-  const { data: user, error } = useSWR(
-    'http://localhost:3000/auth/profile',
-    fetcher
-  );
-  console.log(user);
+  const { user, error, isLoading } = useUser();
   const router = useRouter();
+
+  if (isLoading) return <p>Loading...</p>;
+  if (error) return <p>Failed to load sets: {error.message}</p>;
+
   const handleLogout = async () => {
     await logout();
-
     router.push('/login');
   };
-
-  // if (error) return <div>Error loading user</div>;
-  // if (!user) return <div>Loading...</div>;
 
   return (
     <div className='flex p-3 w-full justify-between items-center h-14 z-50 bg-neutral-900 border border-b-zinc-700 shadow-sm'>

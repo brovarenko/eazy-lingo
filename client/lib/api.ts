@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Router from 'next/router';
 import useSWR from 'swr';
-import { Set, User } from '@/types';
+import { Set, User, Word } from '@/types';
 
 const api = axios.create({
   baseURL: 'http://localhost:3000',
@@ -29,6 +29,19 @@ export const useUser = () => {
 
   return {
     user: data,
+    error,
+    isLoading,
+  };
+};
+
+export const useSetWords = (setId: string) => {
+  const { data, error, isLoading } = useSWR<Word[]>(
+    `/sets/${setId}/words`,
+    fetcher
+  );
+
+  return {
+    words: data,
     error,
     isLoading,
   };

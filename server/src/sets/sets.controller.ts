@@ -33,6 +33,14 @@ export class SetsController {
     return this.setsService.getUserSets(userId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Get(':id/words')
+  async getSetWords(@Param('id', ParseIntPipe) id: number, @Req() req) {
+    console.log(req);
+    const userId = req.user.userId;
+    return this.setsService.getWordsFromUserSet(id, userId);
+  }
+
   @Get(':id')
   async getSetById(@Param('id', ParseIntPipe) id: number) {
     return this.setsService.getSetById(id);

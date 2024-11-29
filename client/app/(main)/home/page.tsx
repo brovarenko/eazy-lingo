@@ -2,16 +2,11 @@
 
 import { FC, useEffect, useState } from 'react';
 import api, { useUserSets } from '@/lib/api';
-
-interface Set {
-  id: number;
-  name: string;
-  isCommon: boolean;
-  words: { id: number; english: string; german: string }[];
-}
+import { useRouter } from 'next/navigation';
 
 const Page: FC = () => {
   const { sets, error, isLoading } = useUserSets();
+  const router = useRouter();
 
   if (isLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load sets: {error.message}</p>;
@@ -25,16 +20,12 @@ const Page: FC = () => {
         ) : (
           <ul>
             {sets?.map((set) => (
-              <li key={set.id} className='mb-4 border-b pb-2'>
-                <h3 className='text-lg font-semibold'>{set.name}</h3>
-                <p>Common: {set.isCommon ? 'Yes' : 'No'}</p>
-                <ul className='ml-4 mt-2'>
-                  {set.words.map((word) => (
-                    <li key={word.id}>
-                      {word.english} - {word.german}
-                    </li>
-                  ))}
-                </ul>
+              <li
+                key={set.id}
+                onClick={() => router.push(`sets/${set.id}/user`)}
+                className='cursor-pointer hover:underline'
+              >
+                {set.name}
               </li>
             ))}
           </ul>

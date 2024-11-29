@@ -60,6 +60,20 @@ export class SetsService {
     });
   }
 
+  async getWordsFromUserSet(userId: number, setId: number) {
+    const set = await this.prisma.set.findFirst({
+      where: {
+        id: setId,
+        userId: userId,
+      },
+      select: {
+        words: true,
+      },
+    });
+
+    return set?.words || [];
+  }
+
   async getUserSets(userId: number) {
     return this.prisma.set.findMany({
       where: { userId },

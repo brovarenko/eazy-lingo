@@ -2,6 +2,7 @@ export interface Word {
   id: number;
   english: string;
   german: string;
+  perfekt: string;
 }
 
 export interface Set {

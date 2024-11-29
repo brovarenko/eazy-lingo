@@ -8,7 +8,6 @@ import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { UserController } from './user/user.controller';
 import { SetsModule } from './sets/sets.module';
-//import { SetsController } from './sets/sets.controller';
 
 @Module({
   imports: [

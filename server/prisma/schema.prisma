@@ -14,14 +14,15 @@ datasource db {
 }
 
 model Word {
-  id        Int    @id @default(autoincrement())
+  id        Int     @id @default(autoincrement())
   english   String
   german    String
   thirdForm String?
   perfekt   String?
-  setId     Int
-  sets      Set    @relation(fields: [setId], references: [id])  
+  setId     Int?
+  sets      Set?    @relation(fields: [setId], references: [id])
 }
+
 
 model Set {
   id          Int     @id @default(autoincrement())

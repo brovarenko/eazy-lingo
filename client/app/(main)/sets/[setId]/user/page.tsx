@@ -49,11 +49,15 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
     ) {
       setIsFlipped(true);
       setProgress((prev) => prev + 100 / words.length);
+
       setUserInput('');
       setFalseValue(false);
+
       const nextIndex = words.indexOf(currentWord!) + 1;
+
       if (nextIndex < words.length) {
         setCurrentWord(words[nextIndex]);
+        console.log(currentWord);
       } else {
         setCurrentWord(words[0]);
       }
@@ -81,19 +85,6 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
           ) : (
             words?.map((word) => (
               <div key={word.id} className='mb-2'>
-                {/* <input
-                  type='checkbox'
-                  id={`word-${word.id}`}
-                  value={word.id}
-                  onChange={(e) => {
-                    const checked = e.target.checked;
-                    // setSelectedWords((prev) =>
-                    //   checked
-                    //     ? [...prev, word]
-                    //     : prev.filter((w) => w.id !== word.id)
-                    // );
-                  }}
-                /> */}
                 <Label htmlFor={`word-${word.id}`} className='ml-2'>
                   {word.english}
                 </Label>
@@ -107,6 +98,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
           >
             Start
           </button>
+          <div className='p-2'>Add word to set</div>
         </div>
       </div>
     );

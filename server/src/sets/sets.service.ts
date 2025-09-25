@@ -11,9 +11,18 @@ import {
 export class SetsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getAllSets(isCommon?: boolean) {
+  async getAllSets(isCommon?: boolean | string) {
+    let isCommonBool: boolean | undefined = undefined;
+    if (typeof isCommon === 'string') {
+      if (isCommon.toLowerCase() === 'true') isCommonBool = true;
+      else if (isCommon.toLowerCase() === 'false') isCommonBool = false;
+    } else if (typeof isCommon === 'boolean') {
+      isCommonBool = isCommon;
+    }
+
     return this.prisma.set.findMany({
-      where: isCommon !== undefined ? { isCommon } : undefined,
+      where:
+        isCommonBool !== undefined ? { isCommon: isCommonBool } : undefined,
       include: {
         words: true,
         user: true,

@@ -1,10 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-
-import { cn } from '@/lib/utils';
-
-import { Input } from '@/components/ui/input';
+import { FC, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -13,19 +10,15 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Progress } from '@/components/ui/progress';
-import api, { useAllWords, useSetWords, useUser } from '@/lib/api';
+import { useAllWords } from '@/lib/api';
 import { Word } from '@/types';
+import { cn } from '@/lib/utils';
 
-export default function WordsPage({ params }: { params: { setId: string } }) {
-  const setId = params.setId;
-  const { words, error, isLoading } = useSetWords(setId);
-  const {
-    words: allWords,
-    error: allError,
-    isLoading: allLoading,
-  } = useAllWords();
+const LearnAllPage: FC = () => {
+  const { words, error, isLoading } = useAllWords();
+  const router = useRouter();
 
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
   const [userInput, setUserInput] = useState('');
@@ -36,61 +29,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   const [tense, setTense] = useState<'present' | 'perfect'>('present');
 
   if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Failed to load sets: {error.message}</p>;
-
-  const addWordToSet = async (wordId: number) => {
-    try {
-      await api.post(`/sets/${setId}/words`, { wordId });
-      // Refresh the words list
-      window.location.reload();
-    } catch (error) {
-      console.error('Failed to add word to set:', error);
-    }
-  };
-
-  if (!words || words.length === 0) {
-    return (
-      <div className='flex flex-col items-center justify-center h-screen p-4'>
-        <h1 className='text-2xl font-bold mb-6'>Add Words to Set</h1>
-        <div className='max-w-2xl w-full'>
-          {allLoading ? (
-            <p>Loading words...</p>
-          ) : allError ? (
-            <p>Failed to load words: {allError.message}</p>
-          ) : (
-            <div className='grid gap-4'>
-              {allWords?.map((word) => (
-                <div
-                  key={word.id}
-                  className='flex items-center justify-between p-4 border rounded-lg'
-                >
-                  <div>
-                    <span className='font-semibold'>{word.english}</span>
-                    <span className='mx-2'>-</span>
-                    <span>{word.german}</span>
-                    {word.perfekt && (
-                      <>
-                        <span className='mx-2'>-</span>
-                        <span className='text-sm text-gray-600'>
-                          {word.perfekt}
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <Button
-                    onClick={() => addWordToSet(word.id)}
-                    className='bg-blue-500 hover:bg-blue-600'
-                  >
-                    Add to Set
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
+  if (error) return <p>Failed to load words: {error.message}</p>;
 
   const checkAnswer = () => {
     if (
@@ -99,18 +38,17 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
         currentWord[tense === 'present' ? 'german' : 'perfekt'].toLowerCase()
     ) {
       setIsFlipped(true);
-      setProgress((prev) => prev + 100 / words.length);
+      setProgress((prev) => prev + 100 / (words?.length || 1));
 
       setUserInput('');
       setFalseValue(false);
 
-      const nextIndex = words.indexOf(currentWord!) + 1;
+      const nextIndex = words?.indexOf(currentWord!) + 1;
 
-      if (nextIndex < words.length) {
-        setCurrentWord(words[nextIndex]);
-        console.log(currentWord);
+      if (nextIndex && nextIndex < (words?.length || 0)) {
+        setCurrentWord(words![nextIndex]);
       } else {
-        setCurrentWord(words[0]);
+        setCurrentWord(words![0]);
       }
     } else {
       setFalseValue(true);
@@ -118,21 +56,43 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   };
 
   const startLearning = () => {
-    setCurrentWord(words[0]);
-    setIsSelecting(false);
+    if (words && words.length > 0) {
+      setCurrentWord(words[0]);
+      setIsSelecting(false);
+    }
   };
 
   const stopLearning = () => {
     setCurrentWord(null);
+    setIsSelecting(true);
+    setProgress(0);
   };
+
+  if (!words || words.length === 0) {
+    return (
+      <div className='flex flex-col items-center justify-center min-h-screen p-4'>
+        <div className='text-center'>
+          <h1 className='text-3xl font-bold mb-4'>No Words Available</h1>
+          <p className='text-gray-600 mb-6'>There are no words to learn yet.</p>
+          <Button onClick={() => router.push('/home')}>Go to Home</Button>
+        </div>
+      </div>
+    );
+  }
 
   if (isSelecting) {
     return (
-      <div className='flex flex-col items-center justify-center w-full h-screen p-4'>
+      <div className='flex flex-col items-center justify-center min-h-screen p-4'>
         <div className='max-w-2xl w-full'>
-          <h1 className='text-3xl font-bold mb-6 text-center'>Words in Set</h1>
+          <h1 className='text-3xl font-bold text-center mb-6'>
+            Learn All Words
+          </h1>
+          <p className='text-center text-gray-600 mb-6'>
+            Practice with all available words ({words.length} words)
+          </p>
+
           <div className='mb-6'>
-            <div className='flex gap-4 mb-4'>
+            <div className='flex gap-4 justify-center mb-4'>
               <Button
                 onClick={() => setTense('present')}
                 className={tense === 'present' ? 'bg-blue-500' : 'bg-gray-300'}
@@ -147,35 +107,13 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
               </Button>
             </div>
           </div>
-          <div className='grid gap-2 mb-6'>
-            {words?.map((word) => (
-              <div
-                key={word.id}
-                className='flex items-center justify-between p-3 border rounded-lg'
-              >
-                <div>
-                  <span className='font-semibold'>{word.english}</span>
-                  <span className='mx-2'>-</span>
-                  <span>{word.german}</span>
-                  {word.perfekt && (
-                    <>
-                      <span className='mx-2'>-</span>
-                      <span className='text-sm text-gray-600'>
-                        {word.perfekt}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
+
           <div className='text-center'>
             <Button
               onClick={startLearning}
               className='bg-green-500 hover:bg-green-600 text-white px-8 py-3 text-lg'
-              disabled={words.length === 0}
             >
-              Start Learning
+              Start Learning All Words
             </Button>
           </div>
         </div>
@@ -185,16 +123,20 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
 
   if (!currentWord) {
     return (
-      <div className='flex justify-center items-center h-screen'>
+      <div className='flex justify-center items-center min-h-screen'>
         <div className='text-center'>
           <h1 className='text-3xl font-bold'>Finish!</h1>
+          <p className='text-gray-600 mt-4'>You've completed all words!</p>
+          <Button onClick={stopLearning} className='mt-4'>
+            Start Over
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className='flex flex-col items-center justify-center h-screen p-4'>
+    <div className='flex flex-col items-center justify-center min-h-screen p-4'>
       <div className='max-w-md w-full'>
         <div className='mb-4'>
           <div className='flex justify-between items-center mb-2'>
@@ -273,4 +215,6 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
       </div>
     </div>
   );
-}
+};
+
+export default LearnAllPage;

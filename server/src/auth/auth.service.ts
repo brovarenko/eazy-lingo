@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   async login(profile: any) {
-    //console.log(profile);
+    console.log('AuthService.login - profile:', profile);
     const { id: googleId, email, displayName } = profile;
 
     let user = await this.prisma.user.findUnique({

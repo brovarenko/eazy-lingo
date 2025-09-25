@@ -12,7 +12,11 @@ import {
   Req,
 } from '@nestjs/common';
 import { SetsService } from './sets.service';
-import { CreateSetDto, UpdateSetDto, AddWordDto } from './dto/create-set.dto';
+import {
+  CreateSetDto,
+  UpdateSetDto,
+  AddExistingWordDto,
+} from './dto/create-set.dto';
 import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 @Controller('sets')
@@ -38,7 +42,7 @@ export class SetsController {
   async getSetWords(@Param('id', ParseIntPipe) id: number, @Req() req) {
     console.log(req);
     const userId = req.user.userId;
-    return this.setsService.getWordsFromUserSet(id, userId);
+    return this.setsService.getWordsFromUserSet(userId, id);
   }
 
   @Get(':id')
@@ -46,9 +50,11 @@ export class SetsController {
     return this.setsService.getSetById(id);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Post()
-  async createSet(@Body() createSetDto: CreateSetDto) {
-    return this.setsService.createSet(createSetDto);
+  async createSet(@Body() createSetDto: CreateSetDto, @Req() req) {
+    const userId = req.user.userId;
+    return this.setsService.createSet(createSetDto, userId);
   }
 
   @Put(':id')
@@ -67,8 +73,8 @@ export class SetsController {
   @Post(':id/words')
   async addWordToSet(
     @Param('id', ParseIntPipe) id: number,
-    @Body() addWordDto: AddWordDto,
+    @Body() addExistingWordDto: AddExistingWordDto,
   ) {
-    return this.setsService.addWordToSet(id, addWordDto);
+    return this.setsService.addExistingWordToSet(id, addExistingWordDto);
   }
 }

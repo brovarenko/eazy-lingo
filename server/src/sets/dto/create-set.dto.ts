@@ -15,3 +15,7 @@ export class AddWordDto {
   thirdForm?: string;
   perfekt?: string;
 }
+
+export class AddExistingWordDto {
+  wordId: number;
+}

@@ -4,7 +4,7 @@ import useSWR from 'swr';
 import { Set, User, Word } from '@/types';
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000',
+  baseURL: 'http://localhost:3001',
   withCredentials: true,
 });
 
@@ -15,12 +15,16 @@ export const logout = async () => {
 };
 
 export const useUserSets = () => {
-  const { data, error, isLoading } = useSWR<Set[]>('/sets/user', fetcher);
+  const { data, error, isLoading, mutate } = useSWR<Set[]>(
+    '/sets/user',
+    fetcher
+  );
 
   return {
     sets: data,
     error,
     isLoading,
+    mutate,
   };
 };
 
@@ -47,6 +51,16 @@ export const useSetWords = (setId: string) => {
   };
 };
 
+export const useAllWords = () => {
+  const { data, error, isLoading } = useSWR<Word[]>('/words', fetcher);
+
+  return {
+    words: data,
+    error,
+    isLoading,
+  };
+};
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -57,7 +71,7 @@ api.interceptors.response.use(
 
       try {
         await axios.post(
-          'http://localhost:3000/auth/refresh',
+          'http://localhost:3001/auth/refresh',
           {},
           { withCredentials: true }
         );

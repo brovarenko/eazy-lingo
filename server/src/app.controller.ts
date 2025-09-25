@@ -47,25 +47,37 @@ export class AppController {
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
-    const { access_token, refresh_token } = await this.authService.login(
-      req.user,
-    );
+    try {
+      console.log('Google OAuth redirect - req.user:', req.user);
 
-    res.cookie('access_token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 1000,
-    });
+      if (!req.user) {
+        console.error('No user data in request');
+        return res.redirect('http://localhost:3000/login?error=no_user_data');
+      }
 
-    res.cookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+      const { access_token, refresh_token } = await this.authService.login(
+        req.user,
+      );
 
-    res.redirect('http://localhost:3001/home');
+      res.cookie('access_token', access_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 1000,
+      });
+
+      res.cookie('refresh_token', refresh_token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.redirect('http://localhost:3000/home');
+    } catch (error) {
+      console.error('Google OAuth redirect error:', error);
+      res.redirect('http://localhost:3000/login?error=auth_failed');
+    }
   }
 
   @Post('refresh')

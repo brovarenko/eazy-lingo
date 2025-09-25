@@ -1,6 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateSetDto, UpdateSetDto, AddWordDto } from './dto/create-set.dto';
+import {
+  CreateSetDto,
+  UpdateSetDto,
+  AddWordDto,
+  AddExistingWordDto,
+} from './dto/create-set.dto';
 
 @Injectable()
 export class SetsService {
@@ -27,12 +32,12 @@ export class SetsService {
     return set;
   }
 
-  async createSet(createSetDto: CreateSetDto) {
+  async createSet(createSetDto: CreateSetDto, userId: number) {
     return this.prisma.set.create({
       data: {
         name: createSetDto.name,
         isCommon: createSetDto.isCommon,
-        userId: createSetDto.userId,
+        userId,
       },
     });
   }
@@ -57,6 +62,35 @@ export class SetsService {
         perfekt: addWordDto.perfekt,
         setId,
       },
+    });
+  }
+
+  async addExistingWordToSet(
+    setId: number,
+    addExistingWordDto: AddExistingWordDto,
+  ) {
+    // Проверяем, что слово существует
+    const word = await this.prisma.word.findUnique({
+      where: { id: addExistingWordDto.wordId },
+    });
+
+    if (!word) {
+      throw new NotFoundException('Word not found');
+    }
+
+    // Проверяем, что набор существует
+    const set = await this.prisma.set.findUnique({
+      where: { id: setId },
+    });
+
+    if (!set) {
+      throw new NotFoundException('Set not found');
+    }
+
+    // Обновляем слово, добавляя его в набор
+    return this.prisma.word.update({
+      where: { id: addExistingWordDto.wordId },
+      data: { setId },
     });
   }
 

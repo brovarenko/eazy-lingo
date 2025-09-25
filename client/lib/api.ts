@@ -28,6 +28,19 @@ export const useUserSets = () => {
   };
 };
 
+export const useCommonSets = () => {
+  const { data, error, isLoading } = useSWR<Set[]>(
+    '/sets?isCommon=true',
+    fetcher
+  );
+
+  return {
+    sets: data,
+    error,
+    isLoading,
+  };
+};
+
 export const useUser = () => {
   const { data, error, isLoading } = useSWR<User>('/auth/profile', fetcher);
 

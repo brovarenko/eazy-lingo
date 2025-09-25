@@ -4,12 +4,16 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prisma:seed": "ts-node ./server/prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "jwt-decode": "^4.0.0"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2"
   }
 }

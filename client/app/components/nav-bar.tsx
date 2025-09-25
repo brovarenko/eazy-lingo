@@ -1,6 +1,6 @@
 'use client';
 
-import { LayoutDashboard, Library } from 'lucide-react';
+import { Library, LogOut, User as UserIcon } from 'lucide-react';
 import { FC } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -25,8 +25,8 @@ const Navbar: FC<NavbarProps> = ({}) => {
   const { user, error, isLoading } = useUser();
   const router = useRouter();
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Failed to load sets: {error.message}</p>;
+  if (isLoading) return <div className='h-14' />;
+  if (error) return <div className='h-14' />;
 
   const handleLogout = async () => {
     await logout();
@@ -34,38 +34,22 @@ const Navbar: FC<NavbarProps> = ({}) => {
   };
 
   return (
-    <div className='flex p-3 w-full justify-between items-center h-14 z-50 bg-neutral-900 border border-b-zinc-700 shadow-sm'>
-      <div className='flex'>
-        <Library color='#04f000' />
-        <span className='px-1 text-lg'>EazyLingo</span>
-      </div>
+    <div className='flex p-3 w-full justify-between items-center h-14 z-50 bg-neutral-900/80 backdrop-blur border border-b-zinc-800 shadow-sm'>
+      <Link href={'/home'} className='flex items-center gap-2'>
+        <Library className='text-green-400' />
+        <span className='text-lg font-semibold tracking-tight'>EazyLingo</span>
+      </Link>
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
-            <NavigationMenuTrigger>Item One</NavigationMenuTrigger>
+            <NavigationMenuTrigger>Navigation</NavigationMenuTrigger>
             <NavigationMenuContent>
               <NavigationMenuLink asChild>
                 <a
                   className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
                   href={`/home`}
                 >
-                  home
-                </a>
-              </NavigationMenuLink>
-              <NavigationMenuLink asChild>
-                <a
-                  className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
-                  href={`/learn`}
-                >
-                  Learn Sets
-                </a>
-              </NavigationMenuLink>
-              <NavigationMenuLink asChild>
-                <a
-                  className='block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground'
-                  href={`/learn/all`}
-                >
-                  Learn All Words
+                  Home
                 </a>
               </NavigationMenuLink>
             </NavigationMenuContent>
@@ -73,9 +57,19 @@ const Navbar: FC<NavbarProps> = ({}) => {
         </NavigationMenuList>
       </NavigationMenu>
       {user ? (
-        <div className='flex'>
-          <div className='mr-2'>{user.name}</div>
-          <Button onClick={handleLogout}>Logout</Button>
+        <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2 text-sm text-zinc-300'>
+            <UserIcon size={16} />
+            <span>{user.name}</span>
+          </div>
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={handleLogout}
+            className='gap-2'
+          >
+            <LogOut size={16} /> Logout
+          </Button>
         </div>
       ) : (
         <Link href={'/login'}>Login</Link>

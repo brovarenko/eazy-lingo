@@ -2,14 +2,19 @@ import Link from 'next/link';
 
 export default function Home() {
   return (
-    <div className='min-h-screen flex justify-center items-center bg-gradient-to-r from-green-500 to-green-900 p-6'>
-      <div className='container mx-auto flex flex-col justify-center items-center'>
-        <h2 className='text-4xl text-white font-bold mb-4'>Learn Easy</h2>
+    <div className='min-h-screen flex justify-center items-center bg-gradient-to-br from-zinc-950 via-zinc-900 to-emerald-900 p-6'>
+      <div className='container mx-auto flex flex-col justify-center items-center text-center'>
+        <h1 className='text-5xl md:text-6xl font-extrabold tracking-tight text-white mb-4'>
+          EazyLingo
+        </h1>
+        <p className='text-zinc-300 max-w-xl mb-8'>
+          Learn words faster: create your own sets or choose ready-made ones.
+        </p>
         <Link
-          className='bg-white text-sm text-gray-700 font-semibold py-2 px-6 rounded'
+          className='bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 px-6 rounded-md shadow transition'
           href={'/home'}
         >
-          Get started
+          Go to Home
         </Link>
       </div>
     </div>

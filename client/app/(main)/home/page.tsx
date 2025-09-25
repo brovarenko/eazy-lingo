@@ -1,7 +1,7 @@
 'use client';
 
-import { FC, useEffect, useState } from 'react';
-import api, { useUserSets } from '@/lib/api';
+import { FC, useState } from 'react';
+import api, { useUserSets, useCommonSets } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,49 +14,99 @@ import {
 import CreateSetForm from '@/app/components/create-set-form';
 
 const Page: FC = () => {
-  const { sets, error, isLoading, mutate } = useUserSets(); // Add mutate from SWR to revalidate data
+  const { sets, error, isLoading, mutate } = useUserSets();
+  const { sets: commonSets, isLoading: isCommonLoading } = useCommonSets();
   const router = useRouter();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  if (isLoading) return <p>Loading...</p>;
+  if (isLoading || isCommonLoading) return <p>Loading...</p>;
   if (error) return <p>Failed to load sets: {error.message}</p>;
 
   return (
-    <div className='flex w-full justify-center'>
-      <div className='max-w-2xl w-full'>
-        <h2 className='text-2xl font-bold mb-4'>Your Sets</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className='mb-4'>Create New Set</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Create New Set</DialogTitle>
-            </DialogHeader>
-            <CreateSetForm
-              onSetCreated={() => {
-                setIsDialogOpen(false);
-                mutate(); // Revalidate sets data
-              }}
-              onCancel={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-        {sets?.length === 0 ? (
-          <p>No sets found.</p>
-        ) : (
-          <ul>
-            {sets?.map((set) => (
-              <li
+    <div className='flex w-full justify-center px-4'>
+      <div className='w-full max-w-5xl'>
+        <div className='flex items-center justify-between mb-6'>
+          <h2 className='text-3xl font-semibold tracking-tight'>My Sets</h2>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button size='sm'>Create Set</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New Set</DialogTitle>
+              </DialogHeader>
+              <CreateSetForm
+                onSetCreated={() => {
+                  setIsDialogOpen(false);
+                  mutate();
+                }}
+                onCancel={() => setIsDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-10'>
+          {sets && sets.length > 0 ? (
+            sets.map((set) => (
+              <div
                 key={set.id}
+                className='group rounded-xl border border-zinc-800 bg-zinc-900/60 hover:bg-zinc-900 transition p-4 cursor-pointer'
                 onClick={() => router.push(`sets/${set.id}/user`)}
-                className='cursor-pointer hover:underline'
               >
-                {set.name}
-              </li>
-            ))}
-          </ul>
-        )}
+                <div className='flex items-center justify-between mb-2'>
+                  <h3 className='text-lg font-medium'>{set.name}</h3>
+                  <span className='text-xs text-zinc-400'>
+                    words: {set.words?.length ?? 0}
+                  </span>
+                </div>
+                <div className='text-xs text-zinc-400'>Open Set</div>
+              </div>
+            ))
+          ) : (
+            <div className='text-zinc-400'>No sets found</div>
+          )}
+        </div>
+
+        <div className='flex items-center justify-between mb-3'>
+          <h2 className='text-xl font-semibold tracking-tight'>
+            Ready-made Sets
+          </h2>
+        </div>
+        <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
+          {commonSets && commonSets.length > 0 ? (
+            commonSets.map((set) => (
+              <div
+                key={set.id}
+                className='rounded-xl border border-zinc-800 bg-zinc-900/40 p-4'
+              >
+                <div className='flex items-center justify-between mb-2'>
+                  <h3 className='text-lg font-medium'>{set.name}</h3>
+                  <span className='text-xs text-zinc-400'>
+                    words: {set.words?.length ?? 0}
+                  </span>
+                </div>
+                <div className='flex gap-2'>
+                  <Button
+                    variant='secondary'
+                    size='sm'
+                    onClick={() => router.push(`sets/${set.id}`)}
+                  >
+                    View
+                  </Button>
+                  <Button
+                    size='sm'
+                    onClick={() => router.push(`sets/${set.id}/user`)}
+                  >
+                    Learn
+                  </Button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className='text-zinc-400'>No ready-made sets</div>
+          )}
+        </div>
       </div>
     </div>
   );

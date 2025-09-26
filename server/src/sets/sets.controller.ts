@@ -77,4 +77,15 @@ export class SetsController {
   ) {
     return this.setsService.addExistingWordToSet(id, addExistingWordDto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':id/words/:wordId')
+  async removeWordFromSet(
+    @Param('id', ParseIntPipe) id: number,
+    @Param('wordId', ParseIntPipe) wordId: number,
+    @Req() req,
+  ) {
+    const userId = req.user.userId;
+    return this.setsService.removeWordFromSet(userId, id, wordId);
+  }
 }

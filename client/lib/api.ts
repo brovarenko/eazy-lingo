@@ -52,7 +52,7 @@ export const useUser = () => {
 };
 
 export const useSetWords = (setId: string) => {
-  const { data, error, isLoading } = useSWR<Word[]>(
+  const { data, error, isLoading, mutate } = useSWR<Word[]>(
     `/sets/${setId}/words`,
     fetcher
   );
@@ -61,18 +61,23 @@ export const useSetWords = (setId: string) => {
     words: data,
     error,
     isLoading,
+    mutate,
   };
 };
 
 export const useAllWords = () => {
-  const { data, error, isLoading } = useSWR<Word[]>('/words', fetcher);
+  const { data, error, isLoading, mutate } = useSWR<Word[]>('/words', fetcher);
 
   return {
     words: data,
     error,
     isLoading,
+    mutate,
   };
 };
+
+export const removeWordFromSet = (setId: string | number, wordId: number) =>
+  api.delete(`/sets/${setId}/words/${wordId}`);
 
 api.interceptors.response.use(
   (response) => response,

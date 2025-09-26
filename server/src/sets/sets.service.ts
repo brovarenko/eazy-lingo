@@ -78,7 +78,6 @@ export class SetsService {
     setId: number,
     addExistingWordDto: AddExistingWordDto,
   ) {
-    // Проверяем, что слово существует
     const word = await this.prisma.word.findUnique({
       where: { id: addExistingWordDto.wordId },
     });
@@ -87,7 +86,6 @@ export class SetsService {
       throw new NotFoundException('Word not found');
     }
 
-    // Проверяем, что набор существует
     const set = await this.prisma.set.findUnique({
       where: { id: setId },
     });
@@ -96,10 +94,33 @@ export class SetsService {
       throw new NotFoundException('Set not found');
     }
 
-    // Обновляем слово, добавляя его в набор
     return this.prisma.word.update({
       where: { id: addExistingWordDto.wordId },
       data: { setId },
+    });
+  }
+
+  async removeWordFromSet(userId: number, setId: number, wordId: number) {
+    const set = await this.prisma.set.findFirst({
+      where: { id: setId, userId },
+      select: { id: true },
+    });
+
+    if (!set) {
+      throw new NotFoundException('Set not found');
+    }
+
+    const word = await this.prisma.word.findFirst({
+      where: { id: wordId, setId },
+    });
+
+    if (!word) {
+      throw new NotFoundException('Word not found in set');
+    }
+
+    return this.prisma.word.update({
+      where: { id: wordId },
+      data: { setId: null },
     });
   }
 

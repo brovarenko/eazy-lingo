@@ -14,7 +14,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import api, { useAllWords, useSetWords } from '@/lib/api';
+import api, { removeWordFromSet, useAllWords, useSetWords } from '@/lib/api';
 import { Word } from '@/types';
 
 const pageWrapperClasses =
@@ -26,7 +26,9 @@ const wordRowClasses =
 
 const renderWordSummary = (word: Word) => (
   <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-zinc-300'>
-    <span className='text-base font-semibold text-zinc-100'>{word.english}</span>
+    <span className='text-base font-semibold text-zinc-100'>
+      {word.english}
+    </span>
     <span className='text-zinc-500'>-</span>
     <span>{word.german}</span>
     {word.perfekt && (
@@ -40,11 +42,17 @@ const renderWordSummary = (word: Word) => (
 
 export default function WordsPage({ params }: { params: { setId: string } }) {
   const setId = params.setId;
-  const { words, error, isLoading } = useSetWords(setId);
+  const {
+    words,
+    error,
+    isLoading,
+    mutate: mutateSetWords,
+  } = useSetWords(setId);
   const {
     words: allWords,
     error: allError,
     isLoading: allLoading,
+    mutate: mutateAllWords,
   } = useAllWords();
 
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
@@ -91,9 +99,19 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   const addWordToSet = async (wordId: number) => {
     try {
       await api.post(`/sets/${setId}/words`, { wordId });
-      window.location.reload();
+      await Promise.all([mutateSetWords(), mutateAllWords()]);
     } catch (error) {
       console.error('Failed to add word to set:', error);
+    }
+  };
+
+
+  const deleteWordFromSet = async (wordId: number) => {
+    try {
+      await removeWordFromSet(setId, wordId);
+      await Promise.all([mutateSetWords(), mutateAllWords()]);
+    } catch (error) {
+      console.error('Failed to remove word from set:', error);
     }
   };
 
@@ -160,6 +178,13 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
                   {words.map((word) => (
                     <div key={word.id} className={wordRowClasses}>
                       {renderWordSummary(word)}
+                      <Button
+                        onClick={() => deleteWordFromSet(word.id)}
+                        variant='outline'
+                        className='rounded-lg border border-zinc-700 px-3 py-2 text-sm font-medium text-zinc-200 transition hover:bg-zinc-800 focus-visible:ring-2 focus-visible:ring-zinc-500/60'
+                      >
+                        Remove
+                      </Button>
                     </div>
                   ))}
                 </div>
@@ -238,7 +263,9 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
 
     if (normalizedInput === normalizedAnswer) {
       const wordsCount = words.length || 1;
-      const currentIndex = words.findIndex((word) => word.id === currentWord.id);
+      const currentIndex = words.findIndex(
+        (word) => word.id === currentWord.id
+      );
       const nextIndex = currentIndex + 1;
 
       setIsFlipped(true);
@@ -264,7 +291,8 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
         <div className='space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-xl backdrop-blur'>
           <div className='flex items-center justify-between text-sm text-zinc-300'>
             <span>
-              {words.findIndex((word) => word.id === currentWord.id) + 1} of {words.length}
+              {words.findIndex((word) => word.id === currentWord.id) + 1} of{' '}
+              {words.length}
             </span>
             <div className='flex gap-2'>
               <Button
@@ -325,7 +353,8 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
               } translation`}
               className={cn(
                 'w-full rounded-xl border border-zinc-700 bg-zinc-950/60 px-4 py-3 text-center text-lg font-medium text-zinc-100 placeholder:text-zinc-500 transition focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400/40',
-                hasError && '!border-rose-500 !bg-rose-500/10 text-rose-200 focus:ring-rose-400/40',
+                hasError &&
+                  '!border-rose-500 !bg-rose-500/10 text-rose-200 focus:ring-rose-400/40',
                 !hasError &&
                   userInput.trim() !== '' &&
                   '!border-emerald-400 !bg-emerald-500/10 text-emerald-200 focus:ring-emerald-400/40'

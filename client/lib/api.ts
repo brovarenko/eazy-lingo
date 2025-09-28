@@ -1,6 +1,6 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import Router from 'next/router';
-import useSWR from 'swr';
+import { useQuery } from '@tanstack/react-query';
 import { Set, User, Word } from '@/types';
 
 const api = axios.create({
@@ -8,71 +8,73 @@ const api = axios.create({
   withCredentials: true,
 });
 
-export const fetcher = (url: string) => api.get(url).then((res) => res.data);
-
 export const logout = async () => {
   await api.post('/auth/logout');
 };
 
 export const useUserSets = () => {
-  const { data, error, isLoading, mutate } = useSWR<Set[]>(
-    '/sets/user',
-    fetcher
-  );
-
+  const query = useQuery({
+    queryKey: ['userSets'],
+    queryFn: async () => (await api.get<Set[]>('/sets/user')).data,
+  });
   return {
-    sets: data,
-    error,
-    isLoading,
-    mutate,
+    sets: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
   };
 };
 
 export const useCommonSets = () => {
-  const { data, error, isLoading } = useSWR<Set[]>(
-    '/sets?isCommon=true',
-    fetcher
-  );
-
+  const query = useQuery({
+    queryKey: ['sets', { isCommon: true }],
+    queryFn: async () => (await api.get<Set[]>('/sets?isCommon=true')).data,
+  });
   return {
-    sets: data,
-    error,
-    isLoading,
+    sets: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
   };
 };
 
 export const useUser = () => {
-  const { data, error, isLoading } = useSWR<User>('/auth/profile', fetcher);
-
+  const query = useQuery({
+    queryKey: ['auth', 'profile'],
+    queryFn: async () => (await api.get<User>('/auth/profile')).data,
+  });
   return {
-    user: data,
-    error,
-    isLoading,
+    user: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
   };
 };
 
 export const useSetWords = (setId: string) => {
-  const { data, error, isLoading, mutate } = useSWR<Word[]>(
-    `/sets/${setId}/words`,
-    fetcher
-  );
-
+  const query = useQuery({
+    queryKey: ['sets', setId, 'words'],
+    queryFn: async () => (await api.get<Word[]>(`/sets/${setId}/words`)).data,
+    enabled: !!setId,
+  });
   return {
-    words: data,
-    error,
-    isLoading,
-    mutate,
+    words: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
   };
 };
 
 export const useAllWords = () => {
-  const { data, error, isLoading, mutate } = useSWR<Word[]>('/words', fetcher);
-
+  const query = useQuery({
+    queryKey: ['words'],
+    queryFn: async () => (await api.get<Word[]>('/words')).data,
+  });
   return {
-    words: data,
-    error,
-    isLoading,
-    mutate,
+    words: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
   };
 };
 
@@ -84,7 +86,7 @@ api.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {

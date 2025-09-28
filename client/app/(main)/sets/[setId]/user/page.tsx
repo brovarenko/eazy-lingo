@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState } from 'react';
 
@@ -16,6 +16,7 @@ import {
 import { Progress } from '@/components/ui/progress';
 import api, { removeWordFromSet, useAllWords, useSetWords } from '@/lib/api';
 import { Word } from '@/types';
+import { useQueryClient } from '@tanstack/react-query';
 
 const pageWrapperClasses =
   'min-h-screen w-full bg-zinc-950 px-4 py-10 text-zinc-100';
@@ -42,17 +43,12 @@ const renderWordSummary = (word: Word) => (
 
 export default function WordsPage({ params }: { params: { setId: string } }) {
   const setId = params.setId;
-  const {
-    words,
-    error,
-    isLoading,
-    mutate: mutateSetWords,
-  } = useSetWords(setId);
+  const queryClient = useQueryClient();
+  const { words, error, isLoading } = useSetWords(setId);
   const {
     words: allWords,
     error: allError,
     isLoading: allLoading,
-    mutate: mutateAllWords,
   } = useAllWords();
 
   const [currentWord, setCurrentWord] = useState<Word | null>(null);
@@ -99,17 +95,22 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   const addWordToSet = async (wordId: number) => {
     try {
       await api.post(`/sets/${setId}/words`, { wordId });
-      await Promise.all([mutateSetWords(), mutateAllWords()]);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sets', setId, 'words'] }),
+        queryClient.invalidateQueries({ queryKey: ['words'] }),
+      ]);
     } catch (error) {
       console.error('Failed to add word to set:', error);
     }
   };
 
-
   const deleteWordFromSet = async (wordId: number) => {
     try {
       await removeWordFromSet(setId, wordId);
-      await Promise.all([mutateSetWords(), mutateAllWords()]);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['sets', setId, 'words'] }),
+        queryClient.invalidateQueries({ queryKey: ['words'] }),
+      ]);
     } catch (error) {
       console.error('Failed to remove word from set:', error);
     }

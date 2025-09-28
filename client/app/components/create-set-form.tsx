@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
-import axios from 'axios';
+import api from '@/lib/api';
 
 interface CreateSetFormProps {
   onSetCreated: () => void;
@@ -22,7 +22,7 @@ const CreateSetForm: FC<CreateSetFormProps> = ({ onSetCreated, onCancel }) => {
     setIsSubmitting(true);
 
     try {
-      await axios.post(
+      await api.post(
         'http://localhost:3001/sets',
         {
           name: setName,

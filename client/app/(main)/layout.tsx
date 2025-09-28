@@ -1,13 +1,16 @@
-import Navbar from '../components/nav-bar';
+﻿'use client';
 
-const MainLayout = async ({ children }: { children: React.ReactNode }) => {
+import { ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+
+const queryClient = new QueryClient();
+
+export default function MainLayout({ children }: { children: ReactNode }) {
   return (
-    <div className='flex flex-col'>
-      <Navbar />
-
-      <main className='flex justify-center '>{children}</main>
-    </div>
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
-};
-
-export default MainLayout;
+}

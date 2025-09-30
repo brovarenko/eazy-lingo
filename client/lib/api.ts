@@ -1,10 +1,12 @@
-﻿import axios from 'axios';
+import axios from 'axios';
 import Router from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import { Set, User, Word } from '@/types';
 
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+
 const api = axios.create({
-  baseURL: 'http://localhost:3001',
+  baseURL: API_BASE_URL,
   withCredentials: true,
 });
 
@@ -84,18 +86,13 @@ export const removeWordFromSet = (setId: string | number, wordId: number) =>
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config as any;
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
       try {
-        await axios.post(
-          'http://localhost:3001/auth/refresh',
-          {},
-          { withCredentials: true }
-        );
-
+        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
         return api(originalRequest);
       } catch (err) {
         Router.push('/login');

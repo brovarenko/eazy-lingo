@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import api from '@/lib/api';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface CreateSetFormProps {
   onSetCreated: () => void;
@@ -14,40 +15,26 @@ interface CreateSetFormProps {
 
 const CreateSetForm: FC<CreateSetFormProps> = ({ onSetCreated, onCancel }) => {
   const [setName, setSetName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+
+  const createSetMutation = useMutation({
+    mutationFn: async (payload: { name: string; isCommon: boolean }) => {
+      return api.post('/sets', payload);
+    },
+    onSuccess: () => {
+      toast({ title: 'Set Created!', description: 'Your new set has been successfully created.' });
+      queryClient.invalidateQueries({ queryKey: ['userSets'] });
+      onSetCreated();
+    },
+    onError: () => {
+      toast({ title: 'Error', description: 'Failed to create set. Please try again.', variant: 'destructive' });
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-
-    try {
-      await api.post(
-        'http://localhost:3001/sets',
-        {
-          name: setName,
-          isCommon: false, // Default to false for user-created sets
-          // userId will be added by the backend based on auth token
-        },
-        {
-          withCredentials: true,
-        }
-      );
-      toast({
-        title: 'Set Created!',
-        description: 'Your new set has been successfully created.',
-      });
-      onSetCreated();
-    } catch (error) {
-      console.error('Failed to create set:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to create set. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await createSetMutation.mutateAsync({ name: setName, isCommon: false });
   };
 
   return (
@@ -68,8 +55,8 @@ const CreateSetForm: FC<CreateSetFormProps> = ({ onSetCreated, onCancel }) => {
         <Button type='button' variant='outline' onClick={onCancel}>
           Cancel
         </Button>
-        <Button type='submit' disabled={isSubmitting}>
-          {isSubmitting ? 'Creating...' : 'Create Set'}
+        <Button type='submit' disabled={createSetMutation.isPending}>
+          {createSetMutation.isPending ? 'Creating...' : 'Create Set'}
         </Button>
       </div>
     </form>

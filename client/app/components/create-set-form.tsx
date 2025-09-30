@@ -24,6 +24,7 @@ const CreateSetForm: FC<CreateSetFormProps> = ({ onSetCreated, onCancel }) => {
     },
     onSuccess: () => {
       toast({ title: 'Set Created!', description: 'Your new set has been successfully created.' });
+      setSetName('');
       queryClient.invalidateQueries({ queryKey: ['userSets'] });
       onSetCreated();
     },

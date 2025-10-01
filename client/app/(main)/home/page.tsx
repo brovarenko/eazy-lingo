@@ -107,7 +107,7 @@ const Page: FC = () => {
                   </Button>
                   <Button
                     size='sm'
-                    onClick={() => router.push(`sets/${set.id}/user`)}
+                    onClick={() => router.push(`sets/${set.id}`)}
                   >
                     Learn
                   </Button>

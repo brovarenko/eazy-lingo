@@ -3,7 +3,8 @@ import Router from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import { Set, User, Word } from '@/types';
 
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+export const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -53,6 +54,21 @@ export const useUser = () => {
   };
 };
 
+export const useSetById = (setId: string | number) => {
+  const query = useQuery({
+    queryKey: ['sets', setId],
+    queryFn: async () => (await api.get<Set>(`/sets/${setId}`)).data,
+    enabled: !!setId,
+  });
+
+  return {
+    set: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
+  };
+};
+
 export const useSetWords = (setId: string) => {
   const query = useQuery({
     queryKey: ['sets', setId, 'words'],
@@ -92,7 +108,11 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        await axios.post(`${API_BASE_URL}/auth/refresh`, {}, { withCredentials: true });
+        await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
         return api(originalRequest);
       } catch (err) {
         Router.push('/login');

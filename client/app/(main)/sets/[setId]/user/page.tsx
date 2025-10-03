@@ -1,19 +1,9 @@
-﻿'use client';
+'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
-import { cn } from '@/lib/utils';
-
-import { Input } from '@/components/ui/input';
+import { LearningTrainer } from '@/app/components/learning-trainer';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 import api, { removeWordFromSet, useAllWords, useSetWords } from '@/lib/api';
 import { Word } from '@/types';
 import { useQueryClient } from '@tanstack/react-query';
@@ -24,18 +14,6 @@ const panelClasses =
   'rounded-2xl border border-zinc-800 bg-zinc-900/70 p-6 shadow-xl backdrop-blur';
 const wordRowClasses =
   'flex items-center justify-between gap-4 rounded-xl border border-zinc-800 bg-zinc-950/60 px-4 py-3 transition-colors hover:border-zinc-600';
-
-type ResponseIndicatorColor = 'green' | 'yellow' | 'red';
-
-const getTimeIndicator = (elapsedSeconds: number): ResponseIndicatorColor => {
-  if (elapsedSeconds < 3) {
-    return 'green';
-  }
-  if (elapsedSeconds < 5) {
-    return 'yellow';
-  }
-  return 'red';
-};
 
 const renderWordSummary = (word: Word) => (
   <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-zinc-300'>
@@ -63,43 +41,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
     isLoading: allLoading,
   } = useAllWords();
 
-  const [currentWord, setCurrentWord] = useState<Word | null>(null);
-  const [userInput, setUserInput] = useState('');
   const [isSelecting, setIsSelecting] = useState(true);
-  const [progress, setProgress] = useState(0);
-  const [hasError, setHasError] = useState(false);
-  const [isFlipped, setIsFlipped] = useState(true);
-  const [tense, setTense] = useState<'present' | 'perfect'>('present');
-  const [wordStartTime, setWordStartTime] = useState<number | null>(null);
-  const [responseTime, setResponseTime] = useState<number | null>(null);
-  const [responseIndicator, setResponseIndicator] =
-    useState<ResponseIndicatorColor | null>(null);
-
-  const indicatorColorMap: Record<ResponseIndicatorColor, string> = {
-    green: 'bg-emerald-400',
-    yellow: 'bg-amber-400',
-    red: 'bg-rose-400',
-  };
-
-  const resetStudyState = () => {
-    setProgress(0);
-    setUserInput('');
-    setHasError(false);
-    setIsFlipped(true);
-    setTense('present');
-    setResponseIndicator(null);
-    setResponseTime(null);
-    setWordStartTime(null);
-  };
-
-  const getAnswer = (word: Word) =>
-    (tense === 'present' ? word.german : word.perfekt || word.german) ?? '';
-
-  useEffect(() => {
-    if (currentWord) {
-      setWordStartTime(Date.now());
-    }
-  }, [currentWord?.id]);
 
   if (isLoading) {
     return (
@@ -130,8 +72,8 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
         queryClient.invalidateQueries({ queryKey: ['sets', setId, 'words'] }),
         queryClient.invalidateQueries({ queryKey: ['words'] }),
       ]);
-    } catch (error) {
-      console.error('Failed to add word to set:', error);
+    } catch (addError) {
+      console.error('Failed to add word to set:', addError);
     }
   };
 
@@ -142,21 +84,17 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
         queryClient.invalidateQueries({ queryKey: ['sets', setId, 'words'] }),
         queryClient.invalidateQueries({ queryKey: ['words'] }),
       ]);
-    } catch (error) {
-      console.error('Failed to remove word from set:', error);
+    } catch (removeError) {
+      console.error('Failed to remove word from set:', removeError);
     }
   };
 
   const startLearning = () => {
     if (!words?.length) return;
-    resetStudyState();
-    setCurrentWord(words[0]);
     setIsSelecting(false);
   };
 
   const stopLearning = () => {
-    resetStudyState();
-    setCurrentWord(null);
     setIsSelecting(true);
   };
 
@@ -194,7 +132,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   }
 
   if (isSelecting) {
-    const wordsInSetIds = new Set(words?.map((w) => w.id));
+    const wordsInSetIds = new Set(words.map((w) => w.id));
     const wordsToAdd = allWords?.filter((w) => !wordsInSetIds.has(w.id));
 
     return (
@@ -268,182 +206,9 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
     );
   }
 
-  if (!currentWord) {
-    return (
-      <main className={pageWrapperClasses}>
-        <div className='mx-auto flex w-full max-w-xl flex-1 flex-col items-center justify-center gap-4 text-center'>
-          <h1 className='text-3xl font-bold'>Finished!</h1>
-          <p className='text-zinc-400'>
-            Great job! You can go back to the list and keep practicing.
-          </p>
-          <Button
-            onClick={() => setIsSelecting(true)}
-            className='rounded-lg bg-zinc-800 px-6 py-2 text-sm font-semibold text-zinc-100 shadow-lg transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-500/60'
-          >
-            Back to sets
-          </Button>
-        </div>
-      </main>
-    );
-  }
-
-  const answer = getAnswer(currentWord);
-
-  const checkAnswer = () => {
-    const normalizedInput = userInput.trim().toLowerCase();
-    const normalizedAnswer = answer.trim().toLowerCase();
-
-    if (!currentWord) {
-      return;
-    }
-
-    if (normalizedInput === normalizedAnswer) {
-      const now = Date.now();
-      const startedAt = wordStartTime ?? now;
-      const elapsedSeconds = (now - startedAt) / 1000;
-      const indicator = getTimeIndicator(elapsedSeconds);
-
-      const wordsCount = words.length || 1;
-      const currentIndex = words.findIndex(
-        (word) => word.id === currentWord.id
-      );
-      const nextIndex = currentIndex + 1;
-
-      setIsFlipped(true);
-      setUserInput('');
-      setHasError(false);
-      setResponseIndicator(indicator);
-      setResponseTime(elapsedSeconds);
-      setProgress((prev) =>
-        nextIndex < wordsCount ? Math.min(100, prev + 100 / wordsCount) : 100
-      );
-
-      if (nextIndex < wordsCount) {
-        setCurrentWord(words[nextIndex]);
-      } else {
-        setCurrentWord(null);
-      }
-    } else {
-      setHasError(true);
-      setResponseIndicator(null);
-      setResponseTime(null);
-    }
-  };
-
   return (
     <main className={pageWrapperClasses}>
-      <div className='mx-auto flex w-full max-w-lg flex-col gap-6'>
-        <div className='space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/70 p-5 shadow-xl backdrop-blur'>
-          <div className='flex-col items-center justify-center content-center text-sm text-zinc-300'>
-            <span>
-              {words.findIndex((word) => word.id === currentWord.id) + 1} of{' '}
-              {words.length}
-            </span>
-            <div className='flex items-center gap-3'>
-              <div className='flex gap-2 my-4'>
-                <Button
-                  onClick={() => setTense('present')}
-                  size='sm'
-                  className={cn(
-                    'rounded-md border border-zinc-700 bg-zinc-900/60 text-zinc-200 transition hover:bg-zinc-800',
-                    tense === 'present' &&
-                      'border-zinc-300 bg-zinc-300 text-zinc-900 hover:bg-zinc-300'
-                  )}
-                >
-                  Present
-                </Button>
-                <Button
-                  onClick={() => setTense('perfect')}
-                  size='sm'
-                  className={cn(
-                    'rounded-md border border-zinc-700 bg-zinc-900/60 text-zinc-200 transition hover:bg-zinc-800',
-                    tense === 'perfect' &&
-                      'border-zinc-300 bg-zinc-300 text-zinc-900 hover:bg-zinc-300'
-                  )}
-                >
-                  Perfect
-                </Button>
-              </div>
-            </div>
-            <Progress
-              value={progress}
-              className='h-2 w-full overflow-hidden rounded-full bg-zinc-800 [&>div]:bg-zinc-200'
-            />
-            <div className='my-2'>
-              {responseIndicator && responseTime !== null && (
-                <div className='flex items-center gap-1 text-xs text-zinc-400'>
-                  <span
-                    className={cn(
-                      'inline-flex h-2.5 w-2.5 rounded-full',
-                      indicatorColorMap[responseIndicator]
-                    )}
-                  />
-                  <span>{responseTime.toFixed(1)}s</span>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <Card className='w-full border border-zinc-800 bg-zinc-900/70 shadow-2xl backdrop-blur'>
-            <CardHeader>
-              <CardTitle
-                className='cursor-pointer rounded-xl border border-zinc-800 bg-zinc-950/60 px-6 py-6 text-center text-2xl font-semibold text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-900'
-                onClick={() => setIsFlipped(!isFlipped)}
-              >
-                {isFlipped ? currentWord.english : answer}
-              </CardTitle>
-              <p className='mt-2 text-center text-sm text-zinc-400'>
-                Click to {isFlipped ? 'reveal answer' : 'show question'}
-              </p>
-            </CardHeader>
-            <CardContent className='space-y-3'>
-              <Input
-                type='text'
-                value={userInput}
-                onChange={(event) => setUserInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    checkAnswer();
-                  }
-                }}
-                placeholder={`Enter ${
-                  tense === 'present' ? 'German' : 'Perfect tense'
-                } translation`}
-                className={cn(
-                  'w-full rounded-xl border border-zinc-700 bg-zinc-950/60 px-4 py-3 text-center text-lg font-medium text-zinc-100 placeholder:text-zinc-500 transition focus:border-zinc-400 focus:outline-none focus:ring-2 focus:ring-zinc-400/40',
-                  hasError &&
-                    '!border-rose-500 !bg-rose-500/10 text-rose-200 focus:ring-rose-400/40',
-                  !hasError &&
-                    userInput.trim() !== '' &&
-                    '!border-emerald-400 !bg-emerald-500/10 text-emerald-200 focus:ring-emerald-400/40'
-                )}
-              />
-              {hasError && (
-                <p className='text-center text-sm text-rose-300'>
-                  Try again! The correct answer is: {answer}
-                </p>
-              )}
-            </CardContent>
-            <CardFooter className='flex flex-col gap-3'>
-              <Button
-                onClick={checkAnswer}
-                className='w-full rounded-xl bg-zinc-800 py-3 text-base font-semibold text-zinc-100 shadow-lg transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-500/60 disabled:opacity-60'
-                disabled={!userInput.trim()}
-              >
-                Check Answer
-              </Button>
-              <Button
-                onClick={stopLearning}
-                variant='outline'
-                className='w-full rounded-xl border border-zinc-700 bg-zinc-900/60 text-zinc-100 transition hover:bg-zinc-800 hover:text-zinc-100'
-              >
-                Stop Learning
-              </Button>
-            </CardFooter>
-          </Card>
-        </div>
-      </div>
+      <LearningTrainer words={words} onExit={stopLearning} />
     </main>
   );
 }

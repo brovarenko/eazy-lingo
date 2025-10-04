@@ -24,7 +24,9 @@ const wordRowClasses =
 
 const renderWordSummary = (word: Word) => (
   <div className='flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm text-zinc-300'>
-    <span className='text-base font-semibold text-zinc-100'>{word.english}</span>
+    <span className='text-base font-semibold text-zinc-100'>
+      {word.english}
+    </span>
     <span className='text-zinc-500'>-</span>
     <span>{word.german}</span>
     {word.perfekt && (
@@ -72,9 +74,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
     return availableWords.filter((word) => {
       const englishMatch = word.english.toLowerCase().includes(normalizedTerm);
       const germanMatch = word.german.toLowerCase().includes(normalizedTerm);
-      const perfektMatch = word.perfekt
-        ?.toLowerCase()
-        .includes(normalizedTerm);
+      const perfektMatch = word.perfekt?.toLowerCase().includes(normalizedTerm);
 
       return englishMatch || germanMatch || !!perfektMatch;
     });
@@ -103,7 +103,9 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
     return (
       <main className={pageWrapperClasses}>
         <div className='mx-auto flex w-full max-w-xl flex-1 items-center justify-center text-center'>
-          <p className='text-base text-rose-300'>Failed to load set: {error.message}</p>
+          <p className='text-base text-rose-300'>
+            Failed to load set: {error.message}
+          </p>
         </div>
       </main>
     );
@@ -140,7 +142,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   const handleAddWord = async (wordId: number) => {
     try {
       setPendingWordId(wordId);
-      await api.post(/sets//words, { wordId });
+      await api.post(`/sets/${setId}/words`, { wordId });
       await invalidateQueries();
       closeAddDialog();
     } catch (addError) {
@@ -175,8 +177,12 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
         <section className={panelClasses}>
           <div className='flex flex-wrap items-center justify-between gap-4 border-b border-zinc-800 pb-4'>
             <div>
-              <h1 className='text-3xl font-semibold text-zinc-100'>{set.name}</h1>
-              <p className='text-sm text-zinc-400'>Words in this set: {words.length}</p>
+              <h1 className='text-3xl font-semibold text-zinc-100'>
+                {set.name}
+              </h1>
+              <p className='text-sm text-zinc-400'>
+                Words in this set: {words.length}
+              </p>
             </div>
             <div className='flex gap-3'>
               <Button
@@ -199,7 +205,9 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
 
           <div className='mt-6 grid gap-3'>
             {words.length === 0 ? (
-              <p className='text-sm text-zinc-400'>This set has no words yet.</p>
+              <p className='text-sm text-zinc-400'>
+                This set has no words yet.
+              </p>
             ) : (
               words.map((word) => (
                 <div key={word.id} className={wordRowClasses}>
@@ -241,11 +249,17 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
             />
 
             {isAllWordsLoading ? (
-              <p className='text-sm text-zinc-400'>Loading available words...</p>
+              <p className='text-sm text-zinc-400'>
+                Loading available words...
+              </p>
             ) : allWordsError ? (
-              <p className='text-sm text-rose-300'>Failed to load words: {allWordsError.message}</p>
+              <p className='text-sm text-rose-300'>
+                Failed to load words: {allWordsError.message}
+              </p>
             ) : filteredWords.length === 0 ? (
-              <p className='text-sm text-zinc-400'>No words match your search.</p>
+              <p className='text-sm text-zinc-400'>
+                No words match your search.
+              </p>
             ) : (
               <div className='grid max-h-72 gap-3 overflow-y-auto pr-1'>
                 {filteredWords.map((word) => (

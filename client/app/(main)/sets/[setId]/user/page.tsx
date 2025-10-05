@@ -53,7 +53,7 @@ export default function WordsPage({ params }: { params: { setId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [pendingWordId, setPendingWordId] = useState<number | null>(null);
 
-  const words = set?.words ?? [];
+  const words = useMemo(() => set?.words ?? [], [set]);
 
   const availableWords = useMemo(() => {
     if (!allWords) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { cn } from '@/lib/utils';
 import { Word } from '@/types';
@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { Mic, MicOff } from 'lucide-react';
 
 type ResponseIndicatorColor = 'green' | 'yellow' | 'red';
 
@@ -51,8 +52,19 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
   const [responseIndicator, setResponseIndicator] =
     useState<ResponseIndicatorColor | null>(null);
   const [hasCompleted, setHasCompleted] = useState(false);
+  const [isSpeechSupported, setIsSpeechSupported] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const [speechError, setSpeechError] = useState<string | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const currentWord = words[currentIndex] ?? null;
+  const answer = useMemo(() => {
+    if (!currentWord) {
+      return '';
+    }
+
+    return (tense === 'present' ? currentWord.german : currentWord.perfekt || currentWord.german) ?? '';
+  }, [currentWord, tense]);
   const progress = words.length ? Math.min(100, (currentIndex / words.length) * 100) : 0;
 
   const resetTrainerState = () => {
@@ -65,6 +77,9 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
     setResponseTime(null);
     setWordStartTime(null);
     setHasCompleted(false);
+    setSpeechError(null);
+    setIsListening(false);
+    recognitionRef.current?.stop?.();
   };
 
   useEffect(() => {
@@ -84,6 +99,119 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
     }
   }, [currentWord, currentIndex, hasCompleted, onComplete, words.length]);
 
+  const checkAnswer = useCallback(
+    (inputOverride?: string) => {
+      if (!currentWord) {
+        return;
+      }
+
+      const inputToCheck = (inputOverride ?? userInput).trim();
+      if (!inputToCheck) {
+        return;
+      }
+
+      const normalizedInput = inputToCheck.toLowerCase();
+      const normalizedAnswer = answer.trim().toLowerCase();
+
+      if (normalizedInput === normalizedAnswer) {
+        const now = Date.now();
+        const startedAt = wordStartTime ?? now;
+        const elapsedSeconds = (now - startedAt) / 1000;
+        const indicator = getTimeIndicator(elapsedSeconds);
+
+        const nextIndex = currentIndex + 1;
+
+        setIsFlipped(true);
+        setUserInput('');
+        setHasError(false);
+        setResponseIndicator(indicator);
+        setResponseTime(elapsedSeconds);
+        setCurrentIndex(nextIndex);
+      } else {
+        setHasError(true);
+        setResponseIndicator(null);
+        setResponseTime(null);
+      }
+    },
+    [answer, currentIndex, currentWord, userInput, wordStartTime]
+  );
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const SpeechRecognitionConstructor =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (!SpeechRecognitionConstructor) {
+      setIsSpeechSupported(false);
+      return;
+    }
+
+    const recognition = new SpeechRecognitionConstructor();
+    recognition.lang = 'de-DE';
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+      setSpeechError(null);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      setSpeechError(event?.error ?? 'Speech recognition error');
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event?.results?.[0]?.[0]?.transcript?.trim();
+      if (transcript) {
+        setUserInput(transcript);
+        checkAnswer(transcript);
+      }
+    };
+
+    recognitionRef.current = recognition;
+    setIsSpeechSupported(true);
+
+    return () => {
+      recognition.stop();
+      recognitionRef.current = null;
+      setIsListening(false);
+    };
+  }, [checkAnswer]);
+
+  const handleExit = () => {
+    resetTrainerState();
+    onExit();
+  };
+
+  const handleMicToggle = () => {
+    if (!isSpeechSupported || !recognitionRef.current) {
+      return;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+      return;
+    }
+
+    setSpeechError(null);
+    setHasError(false);
+
+    try {
+      recognitionRef.current.start();
+    } catch (error) {
+      setSpeechError('Unable to access microphone');
+      setIsListening(false);
+    }
+  };
+
   if (!words.length) {
     return (
       <div className='mx-auto flex w-full max-w-lg flex-1 flex-col items-center justify-center gap-4 text-center'>
@@ -100,44 +228,6 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
       </div>
     );
   }
-
-  const answer = currentWord
-    ? (tense === 'present' ? currentWord.german : currentWord.perfekt || currentWord.german) ?? ''
-    : '';
-
-  const handleExit = () => {
-    resetTrainerState();
-    onExit();
-  };
-
-  const checkAnswer = () => {
-    if (!currentWord) {
-      return;
-    }
-
-    const normalizedInput = userInput.trim().toLowerCase();
-    const normalizedAnswer = answer.trim().toLowerCase();
-
-    if (normalizedInput === normalizedAnswer) {
-      const now = Date.now();
-      const startedAt = wordStartTime ?? now;
-      const elapsedSeconds = (now - startedAt) / 1000;
-      const indicator = getTimeIndicator(elapsedSeconds);
-
-      const nextIndex = currentIndex + 1;
-
-      setIsFlipped(true);
-      setUserInput('');
-      setHasError(false);
-      setResponseIndicator(indicator);
-      setResponseTime(elapsedSeconds);
-      setCurrentIndex(nextIndex);
-    } else {
-      setHasError(true);
-      setResponseIndicator(null);
-      setResponseTime(null);
-    }
-  };
 
   if (!currentWord) {
     return (
@@ -241,6 +331,24 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
                   '!border-emerald-400 !bg-emerald-500/10 text-emerald-200 focus:ring-emerald-400/40'
               )}
             />
+            <div className='flex justify-center'>
+              <Button
+                type='button'
+                variant='outline'
+                onClick={handleMicToggle}
+                disabled={!isSpeechSupported}
+                className='flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900/60 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-zinc-800 disabled:opacity-60'
+              >
+                {isListening ? <MicOff className='h-4 w-4' /> : <Mic className='h-4 w-4' />}
+                {isListening ? 'Listening…' : 'Speak'}
+              </Button>
+            </div>
+            {!isSpeechSupported && (
+              <p className='text-center text-xs text-zinc-500'>Speech recognition not supported in this browser.</p>
+            )}
+            {speechError && (
+              <p className='text-center text-xs text-rose-300'>{speechError}</p>
+            )}
             {hasError && (
               <p className='text-center text-sm text-rose-300'>
                 Try again! The correct answer is: {answer}
@@ -249,7 +357,7 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
           </CardContent>
           <CardFooter className='flex flex-col gap-3'>
             <Button
-              onClick={checkAnswer}
+              onClick={() => checkAnswer()}
               className='w-full rounded-xl bg-zinc-800 py-3 text-base font-semibold text-zinc-100 shadow-lg transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-500/60 disabled:opacity-60'
               disabled={!userInput.trim()}
             >

@@ -104,14 +104,6 @@ export default function CommonSetPage({
         </section>
 
         <div className='flex justify-center'>
-          {/* <Button
-            size='lg'
-            className='rounded-xl bg-zinc-800 px-8 py-3 text-base font-semibold text-zinc-100 shadow-lg transition hover:bg-zinc-700 focus-visible:ring-2 focus-visible:ring-zinc-500/60'
-            disabled={!words.length}
-            onClick={() => router.push(`/sets/${params.setId}/user`)}
-          >
-            Start Learning
-          </Button> */}
           <Button
             onClick={startTraining}
             disabled={words.length === 0}

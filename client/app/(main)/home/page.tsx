@@ -26,7 +26,7 @@ const Page: FC = () => {
   return (
     <div className='flex w-full justify-center px-4'>
       <div className='w-full max-w-5xl'>
-        <div className='flex items-center justify-between mb-6'>
+        <div className='flex items-center justify-between my-6'>
           <h2 className='text-3xl font-semibold tracking-tight'>My Sets</h2>
         </div>
 
@@ -89,28 +89,14 @@ const Page: FC = () => {
             commonSets.map((set) => (
               <div
                 key={set.id}
-                className='rounded-xl border border-zinc-800 bg-zinc-900/40 p-4'
+                onClick={() => router.push(`sets/${set.id}`)}
+                className='rounded-xl border border-zinc-800 bg-zinc-900/40 p-4 hover:bg-zinc-900 cursor-pointer'
               >
                 <div className='flex items-center justify-between mb-2'>
                   <h3 className='text-lg font-medium'>{set.name}</h3>
                   <span className='text-xs text-zinc-400'>
                     words: {set.words?.length ?? 0}
                   </span>
-                </div>
-                <div className='flex gap-2'>
-                  <Button
-                    variant='secondary'
-                    size='sm'
-                    onClick={() => router.push(`sets/${set.id}`)}
-                  >
-                    View
-                  </Button>
-                  <Button
-                    size='sm'
-                    onClick={() => router.push(`sets/${set.id}`)}
-                  >
-                    Learn
-                  </Button>
                 </div>
               </div>
             ))

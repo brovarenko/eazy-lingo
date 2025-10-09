@@ -69,6 +69,7 @@ lastAnsweredAt DateTime?
 firstLearnedAt DateTime?
 @@id([userId, wordId])
 @@index([userId, status])
+
 }
 
 enum WordStatus { 

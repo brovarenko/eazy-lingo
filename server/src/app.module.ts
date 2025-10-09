@@ -9,6 +9,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { UserController } from './user/user.controller';
 import { SetsModule } from './sets/sets.module';
 import { WordModule } from './word/word.module';
+import { ProgressModule } from './progress/progress.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { WordModule } from './word/word.module';
     PrismaModule,
     SetsModule,
     WordModule,
+    ProgressModule,
   ],
   controllers: [AppController, UserController],
   providers: [AppService, GoogleStrategy],

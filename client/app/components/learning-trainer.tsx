@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Mic, MicOff } from 'lucide-react';
+import { postTrainingEvent } from '@/lib/api';
 
 type ResponseIndicatorColor = 'green' | 'yellow' | 'red';
 
@@ -127,10 +128,19 @@ export function LearningTrainer({ words, onExit, onComplete }: LearningTrainerPr
         setResponseIndicator(indicator);
         setResponseTime(elapsedSeconds);
         setCurrentIndex(nextIndex);
+        // fire-and-forget progress event
+        try {
+          void postTrainingEvent({ wordId: currentWord.id, result: 'correct', elapsedSeconds });
+        } catch {}
       } else {
         setHasError(true);
         setResponseIndicator(null);
         setResponseTime(null);
+        try {
+          if (currentWord) {
+            void postTrainingEvent({ wordId: currentWord.id, result: 'wrong' });
+          }
+        } catch {}
       }
     },
     [answer, currentIndex, currentWord, userInput, wordStartTime]

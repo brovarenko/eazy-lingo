@@ -7,7 +7,6 @@ import {
   Query,
   UseGuards,
   Req,
-  ParseIntPipe,
 } from '@nestjs/common';
 import { ProgressService } from './progress.service';
 import { TrainingEventDto } from './dto/training-event.dto';
@@ -31,18 +30,22 @@ export class ProgressController {
     @Req() req,
     @Query('status') status?: WordStatusDtoEnum,
     @Query('search') search?: string,
-    @Query('setId', ParseIntPipe) setId?: number,
-    @Query('take', ParseIntPipe) take?: number,
-    @Query('skip', ParseIntPipe) skip?: number,
+    @Query('setId') setIdRaw?: string,
+    @Query('take') takeRaw?: string,
+    @Query('skip') skipRaw?: string,
   ) {
     const userId = req.user.userId;
+    const setId = setIdRaw !== undefined ? Number(setIdRaw) : undefined;
+    const take = takeRaw !== undefined ? Number(takeRaw) : undefined;
+    const skip = skipRaw !== undefined ? Number(skipRaw) : undefined;
+
     return this.progressService.listByStatus({
       userId,
       status,
       search,
-      setId,
-      take,
-      skip,
+      setId: Number.isFinite(setId as number) ? (setId as number) : undefined,
+      take: Number.isFinite(take as number) ? (take as number) : undefined,
+      skip: Number.isFinite(skip as number) ? (skip as number) : undefined,
     });
   }
 

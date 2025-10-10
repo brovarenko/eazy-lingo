@@ -99,6 +99,58 @@ export const useAllWords = () => {
 export const removeWordFromSet = (setId: string | number, wordId: number) =>
   api.delete(`/sets/${setId}/words/${wordId}`);
 
+// -------- Progress API --------
+export type WordStatus = 'NEW' | 'LEARNING' | 'LEARNED' | 'KNOWN';
+
+export interface ProgressItem {
+  userId: number;
+  wordId: number;
+  status: WordStatus;
+  correctCount: number;
+  wrongCount: number;
+  streak: number;
+  lastAnsweredAt?: string;
+  firstLearnedAt?: string;
+  word: Word;
+}
+
+export async function postTrainingEvent(params: {
+  wordId: number;
+  result: 'correct' | 'wrong';
+  elapsedSeconds?: number;
+}) {
+  return api.post('/progress/events', params);
+}
+
+export async function updateWordStatus(wordId: number, status: WordStatus) {
+  return api.patch('/progress/status', { wordId, status });
+}
+
+export function useProgress(options: {
+  status?: WordStatus;
+  search?: string;
+  setId?: number;
+}) {
+  const { status, search, setId } = options;
+  console.log(options);
+  const qs = new URLSearchParams();
+  if (status) qs.set('status', status);
+  if (search) qs.set('search', search);
+  if (setId) qs.set('setId', String(setId));
+
+  const query = useQuery({
+    queryKey: ['progress', { status, search, setId }],
+    queryFn: async () =>
+      (await api.get<ProgressItem[]>(`/progress?${qs.toString()}`)).data,
+  });
+  return {
+    items: query.data,
+    error: query.error as any,
+    isLoading: query.isLoading,
+    mutate: query.refetch,
+  };
+}
+
 api.interceptors.response.use(
   (response) => response,
   async (error) => {

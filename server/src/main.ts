@@ -7,7 +7,7 @@ async function bootstrap() {
   app.enableCors({
     origin: 'http://localhost:3000', // Allow this specific origin
     credentials: true, // If you're using cookies or other credentials
-    methods: 'GET,POST,PUT,DELETE,OPTIONS', // Specify allowed methods
+    methods: 'GET,POST,PUT,DELETE,OPTIONS,PATCH', // Specify allowed methods
   });
   app.use(cookieParser());
   app.use((req, res, next) => {

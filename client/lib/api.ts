@@ -132,7 +132,7 @@ export function useProgress(options: {
   setId?: number;
 }) {
   const { status, search, setId } = options;
-  console.log(options);
+
   const qs = new URLSearchParams();
   if (status) qs.set('status', status);
   if (search) qs.set('search', search);

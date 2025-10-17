@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: eazy_lingo_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eazy_lingo
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  server:
+    build:
+      context: ./server
+      target: dev
+    env_file:
+      - server/.env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/eazy_lingo
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./server:/app
+      - server_node_modules:/app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "pnpm prisma migrate deploy && pnpm run start:dev"
+
+  client:
+    build:
+      context: ./client
+      target: dev
+    env_file:
+      - client/.env
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:4000/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./client:/app
+      - client_node_modules:/app/node_modules
+      - client_next:/app/.next
+    depends_on:
+      - server
+
+volumes:
+  pgdata:
+  server_node_modules:
+  client_node_modules:
+  client_next:

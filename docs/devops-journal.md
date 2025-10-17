@@ -6,3 +6,12 @@
 - Wrote `docs/manual-run.md` describing manual setup, migrations, and runtime checks.
 - Observed mixed lockfiles (`package-lock.json`, `pnpm-lock.yaml`); plan to standardize on pnpm in a later milestone.
 - Next focus: introduce Dockerized development environment to remove local Postgres dependency and unify start commands.
+
+## 2025-10-17 — Containerization scaffolding
+- Added multi-stage Dockerfiles for `server/` and `client/` with dedicated `dev` and `prod` targets (Node 20 slim + pnpm).
+- Created `.dockerignore` files to keep build contexts lean.
+- Produced `docker-compose.dev.yml` (watch mode, local volumes) and `docker-compose.yml` (production-like) with Postgres service and healthchecks.
+- Documented compose usage in `docs/manual-run.md` and codified assumptions in `docs/container-plan.md`.
+- Updated `client/pnpm-lock.yaml` to resolve `pnpm install --frozen-lockfile` failures during Docker builds and verified the deps stage builds cleanly.
+- Patched `server/Dockerfile` to install OpenSSL/`libssl3` so Prisma migrations run successfully inside containers.
+- Remaining work: test the Compose stacks end-to-end and refine migration workflow (consider one-off job or entrypoint script).

@@ -1,5 +1,6 @@
 'use client';
 
+import { API_BASE_URL } from '@/lib/api';
 import { useState } from 'react';
 
 const Login = () => {
@@ -9,7 +10,7 @@ const Login = () => {
     setLoading(true);
     try {
       // Redirect to Google OAuth endpoint
-      window.location.href = 'http://localhost:4000/auth/google';
+      window.location.href = `${API_BASE_URL}/auth/google`;
     } catch (err) {
       console.error('Google Sign-In failed:', err);
       setLoading(false);

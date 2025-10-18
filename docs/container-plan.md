@@ -2,7 +2,7 @@
 
 ## Runtime assumptions
 - Node.js 20 LTS base image (Debian-slim) for predictable glibc support across Next.js and NestJS. The server image additionally installs `openssl`, `libssl3`, and CA certificates for Prisma compatibility.
-- Package manager: `pnpm` (installed via corepack inside the containers).
+- Package manager: workspace-managed `pnpm` (installed via corepack inside the containers, shared lockfiles per package).
 - Shared network: backend listens on port `4000`, frontend on `3000`; PostgreSQL exposed on `5432`.
 - Prisma needs `prisma generate` and migrations before the server starts; migrations will run as part of the compose workflow.
 - Environment variables come from `client/.env` and `server/.env`; compose will map them using `.env` files in the respective folders.

@@ -1,19 +1,15 @@
 {
   "name": "eazy-lingo",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.18.3",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "prisma:seed": "ts-node ./server/prisma/seed.ts"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "jwt-decode": "^4.0.0"
-  },
-  "devDependencies": {
-    "ts-node": "^10.9.2"
+    "bootstrap": "pnpm install --recursive",
+    "dev:server": "pnpm --filter @eazy-lingo/server start:dev",
+    "dev:client": "pnpm --filter @eazy-lingo/client dev",
+    "build": "pnpm --recursive build",
+    "lint": "pnpm --recursive lint",
+    "test": "pnpm --filter @eazy-lingo/server test",
+    "seed": "pnpm --filter @eazy-lingo/server prisma db seed"
   }
 }

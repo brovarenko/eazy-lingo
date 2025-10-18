@@ -1027,12 +1027,14 @@ const prepositionVerbWords = [
     perfekt: 'has sich erkundigt',
   },
 ];
+const demoUserEmail = process.env.DEMO_USER_EMAIL ?? 'demo@eazy-lingo.dev';
+
 async function main() {
   const user = await prisma.user.upsert({
-    where: { email: 'demo@eazy-lingo.dev' },
+    where: { email: demoUserEmail },
     update: {},
     create: {
-      email: 'demo@eazy-lingo.dev',
+      email: demoUserEmail,
       name: 'Demo User',
     },
   });

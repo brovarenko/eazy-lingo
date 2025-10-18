@@ -20,17 +20,13 @@ This guide explains how to start the application stack on a local machine withou
 
 ## 3. Install dependencies
 
-Run the commands below from the project root:
+From the repository root run:
 
 ```bash
-cd server
-pnpm install
-
-cd ../client
-pnpm install
+pnpm bootstrap
 ```
 
-> Keep the server and client node versions in sync (Node 20 LTS).
+This installs dependencies for every workspace package (`@eazy-lingo/server` and `@eazy-lingo/client`). Keep the Node version on 20 LTS so the lockfiles remain compatible.
 
 ## 4. Database migrations & seed
 
@@ -39,6 +35,8 @@ From the `server/` folder run:
 ```bash
 pnpm prisma migrate dev
 pnpm prisma db seed   # optional: only if a seed script exists and you want demo data
+# or from the repository root:
+# pnpm seed
 ```
 
 Confirm the target database received the schema (check tables via `psql`).

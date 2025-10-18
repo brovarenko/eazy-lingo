@@ -23,6 +23,9 @@ JWT_REFRESH_SECRET=replace-with-strong-refresh-secret
 
 # PostgreSQL connection string (adjust user/password/host/dbname as needed)
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/eazy_lingo
+
+# Optional: default user email seeded into the database (should match your OAuth login)
+DEMO_USER_EMAIL=demo@eazy-lingo.dev
 ```
 
 > Keep the real `.env` files out of version control. Use this document as the canonical reference for required variables.

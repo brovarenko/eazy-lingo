@@ -43,6 +43,8 @@ pnpm prisma db seed   # optional: only if a seed script exists and you want demo
 
 Confirm the target database received the schema (check tables via `psql`).
 
+> The seed script provisions a demo account (`demo@eazy-lingo.dev`) plus shared vocabulary sets. After seeding, you can log in with Google using the same email (or adjust it in `prisma/seed.ts` to match your test identity).
+
 ## 5. Run backend
 
 ```bash

@@ -1028,6 +1028,15 @@ const prepositionVerbWords = [
   },
 ];
 async function main() {
+  const user = await prisma.user.upsert({
+    where: { email: 'demo@eazy-lingo.dev' },
+    update: {},
+    create: {
+      email: 'demo@eazy-lingo.dev',
+      name: 'Demo User',
+    },
+  });
+
   await prisma.word.deleteMany();
   await prisma.set.deleteMany();
 

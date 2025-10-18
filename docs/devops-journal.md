@@ -19,4 +19,5 @@
 - Added lightweight `/api/health` controller leveraged by Docker healthchecks (enabled `curl` in the server image and wired `docker-compose*.yml` checks).
 - Enabled global NestJS prefix `/api` so client calls align with compose configuration and health probes.
 - Made Google OAuth callback configurable via `GOOGLE_CALLBACK_URL` (defaults to `/api/auth/google/redirect`) and documented the update.
+- Seed script now provisions a default demo user (`demo@eazy-lingo.dev`) so Docker stacks have a ready account after `pnpm prisma db seed`.
 - Remaining work: test the Compose stacks end-to-end and refine migration workflow (consider one-off job or entrypoint script).

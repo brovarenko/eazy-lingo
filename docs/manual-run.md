@@ -86,5 +86,8 @@ Prerequisites:
 
 - Copy the `.env` files as described above (compose reads them).
 - Ensure ports `3000`, `4000`, and `5432` are free.
+- When switching between dev and prod stacks, rebuild to refresh the image target:
+  - `docker compose -f docker-compose.dev.yml build`
+  - `docker compose build`
 
 Health checks are the same as in section 7. Use `docker compose down -v` to stop and remove containers with volumes.

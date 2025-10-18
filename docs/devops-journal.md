@@ -14,4 +14,6 @@
 - Documented compose usage in `docs/manual-run.md` and codified assumptions in `docs/container-plan.md`.
 - Updated `client/pnpm-lock.yaml` to resolve `pnpm install --frozen-lockfile` failures during Docker builds and verified the deps stage builds cleanly.
 - Patched `server/Dockerfile` to install OpenSSL/`libssl3` so Prisma migrations run successfully inside containers.
+- Restricted Prisma `binaryTargets` to `["native", "debian-openssl-3.0.x"]` to ensure the client ships a Debian-compatible engine for containers.
+- Assigned distinct image tags for dev (`:dev`) and prod (`:prod`) compose stacks to prevent target mix-ups when switching workflows.
 - Remaining work: test the Compose stacks end-to-end and refine migration workflow (consider one-off job or entrypoint script).

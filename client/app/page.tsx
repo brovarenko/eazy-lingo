@@ -9,6 +9,7 @@ export default function Home() {
         </h1>
         <p className='text-zinc-300 max-w-xl mb-8'>
           Learn words faster: create your own sets or choose ready-made ones.
+          <pre>{process.env.NEXT_PUBLIC_API_BASE_URL}</pre>
         </p>
         <Link
           className='bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold py-2.5 px-6 rounded-md shadow transition'

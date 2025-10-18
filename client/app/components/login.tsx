@@ -9,7 +9,7 @@ const Login = () => {
     setLoading(true);
     try {
       // Redirect to Google OAuth endpoint
-      window.location.href = 'http://localhost:3001/auth/google';
+      window.location.href = 'http://localhost:4000/auth/google';
     } catch (err) {
       console.error('Google Sign-In failed:', err);
       setLoading(false);

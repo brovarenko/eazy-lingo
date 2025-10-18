@@ -10,6 +10,8 @@
     "build": "pnpm --recursive build",
     "lint": "pnpm --recursive lint",
     "test": "pnpm --filter @eazy-lingo/server test",
-    "seed": "pnpm --filter @eazy-lingo/server prisma db seed"
+    "generate": "pnpm --filter @eazy-lingo/server exec prisma generate",
+    "seed": "pnpm --filter @eazy-lingo/server exec prisma db seed",
+    "health-check": "node scripts/health-check.js"
   }
 }

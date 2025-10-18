@@ -24,6 +24,7 @@ From the repository root run:
 
 ```bash
 pnpm bootstrap
+pnpm generate   # generate Prisma Client for the server
 ```
 
 This installs dependencies for every workspace package (`@eazy-lingo/server` and `@eazy-lingo/client`). Keep the Node version on 20 LTS so the lockfiles remain compatible.
@@ -66,6 +67,7 @@ The Next.js client should become available at `http://localhost:3000`.
 - Visit `http://localhost:3000` and confirm the UI renders.
 - Call `http://localhost:4000/api/health` (or an equivalent ping endpoint) and ensure it returns a success status.
 - Inspect the browser console and server logs for errors.
+- Run the automated probe (requires the stack to be up): `pnpm health-check`. Override URLs via `API_BASE_URL` or `CLIENT_URL` if needed.
 
 Document any deviations or fixes in `docs/devops-journal.md` so we can automate them later.
 
@@ -94,3 +96,14 @@ Prerequisites:
 Health checks are the same as in section 7. Use `docker compose down -v` to stop and remove containers with volumes.
 
 The server responds with `200 OK` on `http://localhost:4000/api/health`, which is also used by Docker healthchecks.
+
+### Automated validation
+
+After the containers are up, run:
+
+```bash
+pnpm health-check
+```
+
+This script verifies API health, public common sets, and the client homepage. Customize endpoints via `API_BASE_URL` and `CLIENT_URL`.
+Set `CHECK_COMMON_SETS=true` (optionally alongside `HEALTH_CHECK_ACCESS_TOKEN` or `HEALTH_CHECK_COOKIE`) to include authenticated checks.

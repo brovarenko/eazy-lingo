@@ -21,4 +21,6 @@
 - Made Google OAuth callback configurable via `GOOGLE_CALLBACK_URL` (defaults to `/api/auth/google/redirect`) and documented the update.
 - Seed script now provisions a default demo user (`demo@eazy-lingo.dev`) so Docker stacks have a ready account after `pnpm prisma db seed`.
 - Standardized on pnpm workspaces: removed npm lockfiles, renamed packages to `@eazy-lingo/*`, added `pnpm-workspace.yaml`, and introduced root scripts for bootstrap/build/test flows.
+- Added root convenience scripts `pnpm generate` and `pnpm seed` (using `pnpm exec prisma …`) and updated docs to reflect the workspace install flow.
+- Introduced `scripts/health-check.js` with `pnpm health-check` command to verify API health, common sets availability, and client homepage responses (documented in manual run guide).
 - Remaining work: test the Compose stacks end-to-end and refine migration workflow (consider one-off job or entrypoint script).

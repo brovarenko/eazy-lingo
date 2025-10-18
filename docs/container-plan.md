@@ -9,6 +9,7 @@
 - Backend exposes `GET /api/health` for container health probes; images include `curl` for the Docker healthcheck command.
 - NestJS uses a global prefix `/api`, so client requests and health probes should always target `/api/*` paths.
 - Google OAuth callback must match the backend prefix (default `http://localhost:4000/api/auth/google/redirect` via `GOOGLE_CALLBACK_URL`).
+- Added `scripts/health-check.js` (run via `pnpm health-check`) to perform API/client probes locally and in CI.
 
 ## Targets
 1. Dockerfile for `server/` supporting development (watch mode) and production (build + run).

@@ -1039,6 +1039,8 @@ async function main() {
     },
   });
 
+  await prisma.userWordProgress.deleteMany();
+  await prisma.userSet.deleteMany();
   await prisma.word.deleteMany();
   await prisma.set.deleteMany();
 

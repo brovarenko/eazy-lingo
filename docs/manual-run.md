@@ -16,6 +16,7 @@ This guide explains how to start the application stack on a local machine withou
    - `server/.env`
 2. Replace the placeholder values with credentials that exist in your environment.
 3. Ensure the `DATABASE_URL` points to a database you can reach; create the database manually if it does not exist.
+4. If you use Google OAuth, set `GOOGLE_CALLBACK_URL` and register the same URL (`http://localhost:4000/api/auth/google/redirect`) in the Google Cloud Console.
 
 ## 3. Install dependencies
 
@@ -49,7 +50,7 @@ cd server
 pnpm run start:dev
 ```
 
-The NestJS API should listen on `http://localhost:4000` (adjust if the project uses a different port).
+The NestJS API should listen on `http://localhost:4000` and serve all routes under `/api` (for example `http://localhost:4000/api/health`).
 
 ## 6. Run frontend
 
@@ -91,3 +92,5 @@ Prerequisites:
   - `docker compose build`
 
 Health checks are the same as in section 7. Use `docker compose down -v` to stop and remove containers with volumes.
+
+The server responds with `200 OK` on `http://localhost:4000/api/health`, which is also used by Docker healthchecks.

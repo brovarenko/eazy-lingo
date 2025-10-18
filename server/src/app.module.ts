@@ -10,6 +10,7 @@ import { UserController } from './user/user.controller';
 import { SetsModule } from './sets/sets.module';
 import { WordModule } from './word/word.module';
 import { ProgressModule } from './progress/progress.module';
+import { HealthController } from './health.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { ProgressModule } from './progress/progress.module';
     WordModule,
     ProgressModule,
   ],
-  controllers: [AppController, UserController],
+  controllers: [AppController, UserController, HealthController],
   providers: [AppService, GoogleStrategy],
 })
 export class AppModule {}

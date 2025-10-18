@@ -5,7 +5,7 @@ WORKDIR /app
 ENV PNPM_HOME="/root/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends openssl libssl3 ca-certificates \
+    && apt-get install -y --no-install-recommends openssl libssl3 ca-certificates curl \
     && rm -rf /var/lib/apt/lists/* \
     && corepack enable
 

@@ -6,6 +6,9 @@
 - Shared network: backend listens on port `4000`, frontend on `3000`; PostgreSQL exposed on `5432`.
 - Prisma needs `prisma generate` and migrations before the server starts; migrations will run as part of the compose workflow.
 - Environment variables come from `client/.env` and `server/.env`; compose will map them using `.env` files in the respective folders.
+- Backend exposes `GET /api/health` for container health probes; images include `curl` for the Docker healthcheck command.
+- NestJS uses a global prefix `/api`, so client requests and health probes should always target `/api/*` paths.
+- Google OAuth callback must match the backend prefix (default `http://localhost:4000/api/auth/google/redirect` via `GOOGLE_CALLBACK_URL`).
 
 ## Targets
 1. Dockerfile for `server/` supporting development (watch mode) and production (build + run).

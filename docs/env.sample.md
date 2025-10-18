@@ -15,6 +15,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api
 # Google OAuth credentials (create a client in Google Cloud Console)
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
+GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/redirect
 
 # JWT signing secrets (use long random strings)
 JWT_SECRET=replace-with-strong-secret

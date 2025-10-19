@@ -24,4 +24,5 @@
 - Added root convenience scripts `pnpm generate` and `pnpm seed` (using `pnpm exec prisma …`) and updated docs to reflect the workspace install flow.
 - Introduced `scripts/health-check.js` with `pnpm health-check` command to verify API health, common sets availability, and client homepage responses (documented in manual run guide).
 - Created GitHub Actions workflow (`.github/workflows/ci.yml`) running lint, builds, docker-compose stack, and automated health checks with retries.
+- Added Docker publishing workflow (`.github/workflows/docker-publish.yml`) pushing prod images for client/server to GHCR with `latest` and commit SHA tags; documented usage in `docs/deployment.md`.
 - Remaining work: test the Compose stacks end-to-end and refine migration workflow (consider one-off job or entrypoint script).

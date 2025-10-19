@@ -16,6 +16,7 @@
 2. Dockerfile for `client/` focused on production build; dev mode will use host Node for faster refresh (optional).
 3. `docker-compose.dev.yml` orchestrating Postgres, server, and client for local development (builds images tagged `eazy-lingo-*:dev` to avoid cache clashes with prod images).
 4. `docker-compose.yml` (production-like) building images, running migrations, and starting containers without watch modes (tagged `eazy-lingo-*:prod`).
+5. GitHub Actions workflows for CI (`ci.yml`) and image publication to GHCR (`docker-publish.yml`).
 
 ## Open points
 - Decide if we keep both npm and pnpm lockfiles; plan is to standardize on pnpm after confirming team agreement.

@@ -13,6 +13,8 @@ jobs:
       PNPM_HOME: ~/.local/share/pnpm
       PATH: $PNPM_HOME:$PATH
     steps:
+      - name: Install tar
+        run: sudo apt-get update && sudo apt-get install -y tar
       - name: Checkout
         uses: actions/checkout@v4
 

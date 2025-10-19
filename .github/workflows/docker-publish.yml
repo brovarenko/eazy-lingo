@@ -22,6 +22,11 @@ jobs:
       - name: Prepare image owner
         run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
+      - name: Prepare pnpm lockfile for Docker contexts
+        run: |
+          cp pnpm-lock.yaml server/pnpm-lock.yaml
+          cp pnpm-lock.yaml client/pnpm-lock.yaml
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 

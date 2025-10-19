@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      PNPM_HOME: ~/.local/share/pnpm
+      PATH: $PNPM_HOME:$PATH
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm bootstrap
+
+      - name: Generate Prisma client
+        run: pnpm generate
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build packages
+        run: pnpm --recursive build
+
+      - name: Launch docker-compose stack
+        run: docker compose -f docker-compose.dev.yml up --build -d
+
+      - name: Run health checks
+        run: |
+          for attempt in {1..5}; do
+            if pnpm health-check; then
+              exit 0
+            fi
+            echo "Health check failed (attempt ${attempt}), retrying in 5s..."
+            sleep 5
+          done
+          echo "Health checks failed after retries"
+          exit 1
+
+      - name: Tear down docker-compose stack
+        if: always()
+        run: docker compose -f docker-compose.dev.yml down

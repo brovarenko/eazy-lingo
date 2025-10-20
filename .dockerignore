@@ -1,0 +1,26 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Docker assets not required in build context
+docker-compose*.yml
+
+# Dependencies and build output
+**/node_modules
+**/.next
+**/dist
+**/coverage
+
+# Editor and OS artifacts
+.DS_Store
+.vscode
+.idea
+
+# Logs
+**/npm-debug.log
+**/pnpm-debug.log
+**/yarn-error.log
+
+# Environment files
+**/.env

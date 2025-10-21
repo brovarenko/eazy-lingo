@@ -22,11 +22,6 @@ jobs:
       - name: Prepare image owner
         run: echo "IMAGE_OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
 
-      - name: Prepare pnpm lockfile for Docker contexts
-        run: |
-          cp pnpm-lock.yaml server/pnpm-lock.yaml
-          cp pnpm-lock.yaml client/pnpm-lock.yaml
-
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -43,7 +38,7 @@ jobs:
       - name: Build & push server image
         uses: docker/build-push-action@v5
         with:
-          context: ./server
+          context: .
           file: ./server/Dockerfile
           target: prod
           push: true
@@ -54,7 +49,7 @@ jobs:
       - name: Build & push client image
         uses: docker/build-push-action@v5
         with:
-          context: ./client
+          context: .
           file: ./client/Dockerfile
           target: prod
           push: true

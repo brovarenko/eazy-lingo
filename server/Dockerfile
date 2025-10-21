@@ -20,7 +20,7 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY server/package.json server/
-RUN pnpm install --filter @eazy-lingo/server --frozen-lockfile --prod=false
+RUN pnpm install --filter @eazy-lingo/server --frozen-lockfile 
 
 # ------------------------
 # Build
@@ -55,6 +55,7 @@ COPY server/package.json server/
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/server/node_modules ./server/node_modules
 COPY --from=build /app/server/dist ./server/dist
+
 COPY server/prisma ./server/prisma
 EXPOSE 4000
-CMD ["node", "server/dist/src/main.js"]
+CMD ["node", "server/dist/main.js"]

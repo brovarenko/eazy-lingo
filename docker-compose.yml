@@ -36,7 +36,9 @@ services:
       timeout: 5s
       retries: 5
     command: >
-      sh -c "pnpm --filter @eazy-lingo/server exec prisma migrate deploy && node server/dist/src/main.js"
+      sh -c "pnpm --filter @eazy-lingo/server exec prisma migrate deploy &&
+             node server/dist/prisma/seed.js &&
+             node server/dist/src/main.js"
 
   client:
     image: eazy-lingo-client:prod

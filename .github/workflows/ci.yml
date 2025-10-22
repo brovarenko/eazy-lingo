@@ -19,7 +19,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.18.3
+          run_install: false
 
       - name: Enable Corepack
         run: |
@@ -52,6 +57,7 @@ jobs:
           EOF
 
       - name: Launch docker-compose stack
+        id: compose_up
         run: docker compose -f docker-compose.dev.yml up --build -d
 
       - name: Run health checks
@@ -67,5 +73,5 @@ jobs:
           exit 1
 
       - name: Tear down docker-compose stack
-        if: always()
+        if: always() && steps.compose_up.outcome == 'success'
         run: docker compose -f docker-compose.dev.yml down

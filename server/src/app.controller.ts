@@ -4,6 +4,10 @@ import { AuthService } from './auth/auth.service';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
+import { CLIENT_APP_URL } from './config/env';
+
+const buildClientUrl = (path: string): string =>
+  new URL(path, CLIENT_APP_URL).toString();
 
 @Controller('auth')
 export class AppController {
@@ -52,7 +56,7 @@ export class AppController {
 
       if (!req.user) {
         console.error('No user data in request');
-        return res.redirect('http://localhost:3000/login?error=no_user_data');
+        return res.redirect(buildClientUrl('/login?error=no_user_data'));
       }
 
       const { access_token, refresh_token } = await this.authService.login(
@@ -73,10 +77,10 @@ export class AppController {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      res.redirect('http://localhost:3000/home');
+      res.redirect(buildClientUrl('/home'));
     } catch (error) {
       console.error('Google OAuth redirect error:', error);
-      res.redirect('http://localhost:3000/login?error=auth_failed');
+      res.redirect(buildClientUrl('/login?error=auth_failed'));
     }
   }
 

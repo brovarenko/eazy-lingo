@@ -16,6 +16,7 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:4000/api
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
 GOOGLE_CALLBACK_URL=http://localhost:4000/api/auth/google/redirect
+CLIENT_APP_URL=http://localhost:3000
 
 # JWT signing secrets (use long random strings)
 JWT_SECRET=replace-with-strong-secret

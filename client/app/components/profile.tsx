@@ -9,10 +9,7 @@ interface LoginProps {}
 const fetcher = (url: string) => api.get(url).then((res) => res.data);
 
 const Profile: FC<LoginProps> = ({}) => {
-  const { data: user, error } = useSWR(
-    'http://localhost:3000/auth/profile',
-    fetcher
-  );
+  const { data: user, error } = useSWR('/auth/profile', fetcher);
 
   if (error) return <div>Error loading user</div>;
   if (!user) return <div>Loading...</div>;

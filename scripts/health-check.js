@@ -5,8 +5,8 @@
  * Verifies API and client endpoints respond with 2xx status codes.
  *
  * Configure via environment variables:
- *  - API_BASE_URL (default: http://localhost:4000/api)
- *  - CLIENT_URL   (default: http://localhost:3000)
+ *  - API_BASE_URL or NEXT_PUBLIC_API_BASE_URL
+ *  - CLIENT_URL or CLIENT_APP_URL
  *  - REQUEST_TIMEOUT_MS (default: 5000)
  */
 
@@ -15,8 +15,19 @@ const DEFAULT_TIMEOUT = Number.parseInt(
   10,
 );
 
-const API_BASE_URL = process.env.API_BASE_URL ?? 'http://localhost:4000/api';
-const CLIENT_URL = process.env.CLIENT_URL ?? 'http://localhost:3000';
+const getEnv = (...keys) => {
+  for (const key of keys) {
+    const value = process.env[key];
+    if (value) {
+      return value;
+    }
+  }
+
+  throw new Error(`One of ${keys.join(', ')} environment variables must be provided`);
+};
+
+const API_BASE_URL = getEnv('API_BASE_URL', 'NEXT_PUBLIC_API_BASE_URL');
+const CLIENT_URL = getEnv('CLIENT_URL', 'CLIENT_APP_URL');
 
 /**
  * Fetch wrapper with timeout support.

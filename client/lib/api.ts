@@ -3,8 +3,13 @@ import Router from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import { Set, User, Word } from '@/types';
 
-export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api';
+const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+if (!apiBaseUrl) {
+  throw new Error('NEXT_PUBLIC_API_BASE_URL is required but was not provided');
+}
+
+export const API_BASE_URL = apiBaseUrl;
 
 const api = axios.create({
   baseURL: API_BASE_URL,

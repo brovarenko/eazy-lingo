@@ -2,7 +2,7 @@ name: Deploy to EC2
 
 on:
   workflow_run:
-    workflows: ['Publish Docker Images'] # Запускается после успешной публикации образов
+    workflows: ['Publish Docker Images']
     types:
       - completed
 
@@ -20,17 +20,17 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            echo "===> Перехожу в директорию проекта..."
+            echo 
             cd /opt/eazy-lingo
 
-            echo "===> Тяну свежие образы из GHCR..."
-            docker compose -f docker-compose.yml pull || true
+            echo 
+            docker compose -f docker-compose.ec2.yml pull --no-cache
 
-            echo "===> Перезапускаю контейнеры..."
-            docker compose -f docker-compose.yml down
-            docker compose -f docker-compose.yml up -d --build
+            echo 
+            docker compose -f docker-compose.ec2.yml down
+            docker compose -f docker-compose.ec2.yml up -d
 
-            echo "===> Очищаю старые образы..."
+            echo
             docker system prune -f
 
             echo "✅ Деплой успешно завершён!"

@@ -1,0 +1,35 @@
+name: Deploy to EC2
+
+on:
+  workflow_run:
+    workflows: ['Publish Docker Images'] # Запускается после успешной публикации образов
+    types:
+      - completed
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            echo "===> Перехожу в директорию проекта..."
+            cd /opt/eazy-lingo
+
+            echo "===> Тяну свежие образы из GHCR..."
+            docker compose -f docker-compose.ec2.yml pull
+
+            echo "===> Перезапускаю контейнеры..."
+            docker compose -f docker-compose.ec2.yml down
+            docker compose -f docker-compose.ec2.yml up -d
+
+            echo "===> Очищаю старые образы..."
+            docker system prune -f
+
+            echo "✅ Деплой успешно завершён!"

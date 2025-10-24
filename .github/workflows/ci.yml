@@ -61,6 +61,7 @@ jobs:
         run: docker compose -f docker-compose.dev.yml up --build -d
 
       - name: Run health checks
+        sleep: 10
         run: curl -f http://localhost:4000/api/health && curl -f http://localhost:3000
 
       - name: Tear down docker-compose stack

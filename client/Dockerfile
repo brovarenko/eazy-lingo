@@ -27,6 +27,8 @@ RUN pnpm install --filter @eazy-lingo/client --frozen-lockfile --prod=false
 # ------------------------
 FROM deps AS build
 WORKDIR /app
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 COPY client ./client
 RUN pnpm --filter @eazy-lingo/client run build
 
@@ -46,6 +48,8 @@ CMD ["pnpm", "--filter", "@eazy-lingo/client", "run", "dev"]
 FROM base AS prod
 WORKDIR /app
 ENV NODE_ENV=production
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=${NEXT_PUBLIC_API_BASE_URL}
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 COPY client/package.json client/
 COPY client/next.config.mjs client/

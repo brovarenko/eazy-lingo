@@ -61,16 +61,7 @@ jobs:
         run: docker compose -f docker-compose.dev.yml up --build -d
 
       - name: Run health checks
-        run: |
-          for attempt in {1..5}; do
-            if pnpm health-check; then
-              exit 0
-            fi
-            echo "Health check failed (attempt ${attempt}), retrying in 5s..."
-            sleep 5
-          done
-          echo "Health checks failed after retries"
-          exit 1
+        run: curl -f http://localhost:4000/api/health && curl -f http://localhost:3000
 
       - name: Tear down docker-compose stack
         if: always() && steps.compose_up.outcome == 'success'

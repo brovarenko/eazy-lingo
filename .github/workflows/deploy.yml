@@ -34,3 +34,7 @@ jobs:
             docker system prune -f
 
             echo "✅ Деплой успешно завершён!"
+
+            echo "===> Текущие версии образов:"
+            docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+            docker inspect eazy-lingo-server-1 | grep Image

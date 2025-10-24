@@ -3,12 +3,10 @@ name: Deploy to EC2
 on:
   workflow_run:
     workflows: ['Publish Docker Images']
-    types:
-      - completed
+    types: [completed]
 
 jobs:
   deploy:
-    environment: EC2_HOST
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
@@ -20,21 +18,33 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            echo 
+            set -Eeuo pipefail
             cd /opt/eazy-lingo
 
-            echo 
-            docker compose -f docker-compose.ec2.yml pull --no-cache
+            echo "===> Logging in to GHCR"
+            echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
 
-            echo 
+            IMAGE_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+            export IMAGE_OWNER
+            echo "Using ghcr.io/$IMAGE_OWNER/*:latest"
+
+            echo "===> Removing old images"
+            docker image rm ghcr.io/$IMAGE_OWNER/eazy-lingo-server:latest -f || true
+            docker image rm ghcr.io/$IMAGE_OWNER/eazy-lingo-client:latest -f || true
+
+            echo "===> Pulling new images"
+            docker compose -f docker-compose.ec2.yml pull
+
+            echo "===> Restarting stack"
             docker compose -f docker-compose.ec2.yml down
             docker compose -f docker-compose.ec2.yml up -d
 
-            echo
+            echo "===> Cleaning up"
             docker system prune -f
 
-            echo "✅ Деплой успешно завершён!"
-
-            echo "===> Текущие версии образов:"
+            echo "===> Current containers:"
             docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}"
+
+            echo "===> Deployed image digests:"
             docker inspect eazy-lingo-server-1 | grep Image
+            docker inspect eazy-lingo-client-1 | grep Image

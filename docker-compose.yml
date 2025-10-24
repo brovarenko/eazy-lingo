@@ -12,13 +12,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: always
 
   server:
-    image: eazy-lingo-server:prod
-    build:
-      context: .
-      dockerfile: server/Dockerfile
-      target: prod
+    image: ghcr.io/${IMAGE_OWNER}/eazy-lingo-server:latest
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/eazy_lingo
       NODE_ENV: production
@@ -26,6 +23,8 @@ services:
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
       GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
       CLIENT_APP_URL: ${CLIENT_APP_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
     depends_on:
       db:
         condition: service_healthy
@@ -37,26 +36,21 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-    command: >
-      sh -c "pnpm --filter @eazy-lingo/server exec prisma migrate deploy &&
-             node server/dist/prisma/seed.js &&
-             node server/dist/src/main.js"
+    restart: always
 
   client:
-    image: eazy-lingo-client:prod
-    build:
-      context: .
-      dockerfile: client/Dockerfile
-      target: prod
-      args:
-        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+    image: ghcr.io/${IMAGE_OWNER}/eazy-lingo-client:latest
     environment:
       NODE_ENV: production
     depends_on:
       - server
     ports:
       - '3000:3000'
-    command: ['pnpm', '--filter', '@eazy-lingo/client', 'start']
+    restart: always
 
 volumes:
   pgdata:
+
+networks:
+  default:
+    name: eazy-lingo-network

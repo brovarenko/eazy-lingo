@@ -19,11 +19,13 @@ services:
       context: .
       dockerfile: server/Dockerfile
       target: prod
-    env_file:
-      - server/.env
     environment:
       DATABASE_URL: postgresql://postgres:postgres@db:5432/eazy_lingo
       NODE_ENV: production
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      CLIENT_APP_URL: ${CLIENT_APP_URL}
     depends_on:
       db:
         condition: service_healthy
@@ -46,10 +48,9 @@ services:
       context: .
       dockerfile: client/Dockerfile
       target: prod
-    env_file:
-      - client/.env
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
     environment:
-      NEXT_PUBLIC_API_BASE_URL: http://server:4000/api
       NODE_ENV: production
     depends_on:
       - server

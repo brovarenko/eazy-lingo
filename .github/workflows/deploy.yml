@@ -8,6 +8,7 @@ on:
 
 jobs:
   deploy:
+    environment: EC2_HOST
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
 
@@ -23,11 +24,11 @@ jobs:
             cd /opt/eazy-lingo
 
             echo "===> Тяну свежие образы из GHCR..."
-            docker compose -f docker-compose.ec2.yml pull
+            docker compose -f docker-compose.yml pull || true
 
             echo "===> Перезапускаю контейнеры..."
-            docker compose -f docker-compose.ec2.yml down
-            docker compose -f docker-compose.ec2.yml up -d
+            docker compose -f docker-compose.yml down
+            docker compose -f docker-compose.yml up -d --build
 
             echo "===> Очищаю старые образы..."
             docker system prune -f

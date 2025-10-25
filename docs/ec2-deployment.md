@@ -1,4 +1,4 @@
-# AWS EC2 Deployment Guide
+﻿# AWS EC2 Deployment Guide
 
 This document describes how to deploy Eazy Lingo on an Ubuntu-based EC2 instance using Docker Compose and images published to GitHub Container Registry (GHCR).
 
@@ -54,11 +54,12 @@ git clone git@github.com:<owner>/eazy-lingo.git .
 # or: git fetch origin main && git reset --hard origin/main
 ```
 
-Copy the example env file and fill in real secrets:
+Copy the example env file and fill in real secrets, then prepare directories for certificates:
 
 ```bash
 cp .env.production.example .env.production
 nano .env.production   # or your editor of choice
+mkdir -p .certbot/etc .certbot/www
 ```
 
 `/.env.production`
@@ -76,9 +77,34 @@ JWT_SECRET=...
 JWT_REFRESH_SECRET=...
 ```
 
-> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client. Keep `.env.production` out of version control (already listed in `.gitignore`).
+> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client. Keep `.env.production` (and `.certbot/`) out of version control—they are ignored via `.gitignore`.
 
-## 5. Compose file for EC2
+## 5. Issue HTTPS certificates
+TLS terminates inside the nginx container, so Let's Encrypt certs must be available before you start it:
+
+```bash
+cd /opt/eazy-lingo
+# Ensure nothing else listens on port 80 while requesting the cert.
+docker run --rm -it \
+  -p 80:80 \
+  -v "$PWD/.certbot/etc:/etc/letsencrypt" \
+  -v "$PWD/.certbot/www:/var/www/certbot" \
+  certbot/certbot certonly \
+  --standalone \
+  -d app.example.com
+```
+
+Replace `app.example.com` with your domain. After success, certificates live in `.certbot/etc/live/app.example.com/`. Renew monthly via:
+
+```bash
+docker run --rm -it \
+  -v "$PWD/.certbot/etc:/etc/letsencrypt" \
+  -v "$PWD/.certbot/www:/var/www/certbot" \
+  certbot/certbot renew && \
+  docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
+```
+
+## 6. Compose file for EC2
 The repository now ships `docker-compose.prod.yml`, so you no longer need a hand-crafted `docker-compose.yml` on the server. The file defines:
 
 - `db`: Postgres 15 with a persistent `pgdata` volume.
@@ -87,7 +113,7 @@ The repository now ships `docker-compose.prod.yml`, so you no longer need a hand
 
 Because the file lives in git, removing stray copies on the EC2 host is safe—just `git pull` to pick up changes.
 
-## 6. Authenticate to GHCR
+## 7. Authenticate to GHCR
 Log in using a GitHub Personal Access Token (with `read:packages` scope) or the built-in GitHub token if using GitHub Actions self-hosted runner:
 
 ```bash
@@ -96,7 +122,7 @@ echo "<PAT>" | docker login ghcr.io -u <github-username> --password-stdin
 
 Store credentials securely. Consider using AWS Secrets Manager or SSM Parameter Store.
 
-## 7. Deploy
+## 8. Deploy
 
 ```bash
 cd /opt/eazy-lingo
@@ -108,8 +134,8 @@ Verify:
 
 ```bash
 docker compose --env-file .env.production -f docker-compose.prod.yml ps
-curl http://<ec2-ip>:4000/api/health
-curl http://<ec2-ip>:3000
+curl -I https://app.example.com/api/health
+curl -I https://app.example.com
 ```
 
 ### Optional: deploy via helper script
@@ -128,7 +154,7 @@ Environment variables:
 
 > Ensure `docker-compose.prod.yml` and `.env.production` exist on the EC2 host. Copy `.env.production.example`, fill secrets, and keep the file outside git.
 
-## 8. Updates & rollbacks
+## 9. Updates & rollbacks
 
 To update to a new version (latest tag):
 
@@ -147,9 +173,11 @@ docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 
 Keep previous tags to allow quick rollback.
 
-## 9. Optional enhancements
+## 10. Optional enhancements
 - Use AWS RDS instead of containerized Postgres for durability.
 - Add Nginx/Traefik reverse proxy with HTTPS (ACM + ALB or Let's Encrypt via certbot).
 - Automate provisioning via Terraform (EC2, security group, IAM role) and incorporate into CI/CD pipeline.
 - Configure CloudWatch Logs by mounting log drivers or using `awslogs`.
 - Set up systemd unit or cron job to run health checks and alert on failures.
+
+

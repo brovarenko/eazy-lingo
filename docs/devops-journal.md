@@ -10,7 +10,7 @@
 ## 2025-10-17 — Containerization scaffolding
 - Added multi-stage Dockerfiles for `server/` and `client/` with dedicated `dev` and `prod` targets (Node 20 slim + pnpm).
 - Created `.dockerignore` files to keep build contexts lean.
-- Produced `docker-compose.dev.yml` (watch mode, local volumes) and `docker-compose.yml` (production-like) with Postgres service and healthchecks.
+- Produced `docker-compose.yml` (watch mode, local volumes) and `docker-compose.prod.yml` (production-like) with Postgres service and healthchecks.
 - Documented compose usage in `docs/manual-run.md` and codified assumptions in `docs/container-plan.md`.
 - Updated `client/pnpm-lock.yaml` to resolve `pnpm install --frozen-lockfile` failures during Docker builds and verified the deps stage builds cleanly.
 - Patched `server/Dockerfile` to install OpenSSL/`libssl3` so Prisma migrations run successfully inside containers.

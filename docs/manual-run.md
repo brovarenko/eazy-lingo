@@ -79,19 +79,20 @@ Until we automate everything in CI, you can launch the stack with Docker Compose
 
 ```bash
 # Development (hot reload)
-docker compose -f docker-compose.dev.yml up --build
+docker compose up --build
 
 # Production-like build
-docker compose up --build
+docker compose --env-file .env.production -f docker-compose.prod.yml up --build
 ```
 
 Prerequisites:
 
-- Copy the `.env` files as described above (compose reads them).
+- Copy the `.env` files as described above for development.
+- Copy `.env.production.example` to `.env.production` (and fill real secrets) before running the production stack. Keep this file out of version control.
 - Ensure ports `3000`, `4000`, and `5432` are free.
 - When switching between dev and prod stacks, rebuild to refresh the image target:
-  - `docker compose -f docker-compose.dev.yml build`
   - `docker compose build`
+  - `docker compose --env-file .env.production -f docker-compose.prod.yml build`
 
 Health checks are the same as in section 7. Use `docker compose down -v` to stop and remove containers with volumes.
 

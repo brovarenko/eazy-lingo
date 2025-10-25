@@ -22,6 +22,13 @@ jobs:
             set -Eeuo pipefail
             cd /opt/eazy-lingo
 
+            if [ ! -f .env.production ]; then
+              echo "::error::Missing /opt/eazy-lingo/.env.production. Copy .env.production.example and fill in secrets before deploying."
+              exit 1
+            fi
+
+            COMPOSE_CMD="docker compose --env-file .env.production -f docker-compose.prod.yml"
+
             echo "===> Logging in to GHCR"
             echo "${{ secrets.GHCR_TOKEN }}" | docker login ghcr.io -u "${{ secrets.GHCR_USERNAME }}" --password-stdin
 
@@ -34,11 +41,11 @@ jobs:
             docker image rm ghcr.io/$IMAGE_OWNER/eazy-lingo-client:latest -f || true
 
             echo "===> Pulling new images"
-            docker compose -f docker-compose.ec2.yml pull
+            $COMPOSE_CMD pull
 
             echo "===> Restarting stack"
-            docker compose -f docker-compose.ec2.yml down
-            docker compose -f docker-compose.ec2.yml up -d
+            $COMPOSE_CMD down
+            $COMPOSE_CMD up -d
 
             echo "===> Cleaning up"
             docker system prune -f

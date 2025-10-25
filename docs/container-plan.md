@@ -14,8 +14,8 @@
 ## Targets
 1. Dockerfile for `server/` supporting development (watch mode) and production (build + run).
 2. Dockerfile for `client/` focused on production build; dev mode will use host Node for faster refresh (optional).
-3. `docker-compose.dev.yml` orchestrating Postgres, server, and client for local development (builds images tagged `eazy-lingo-*:dev` to avoid cache clashes with prod images).
-4. `docker-compose.yml` (production-like) building images, running migrations, and starting containers without watch modes (tagged `eazy-lingo-*:prod`).
+3. `docker-compose.yml` orchestrating Postgres, server, and client for local development (builds images tagged `eazy-lingo-*:dev` to avoid cache clashes with prod images).
+4. `docker-compose.prod.yml` building images, running migrations, and starting containers without watch modes (tagged `eazy-lingo-*:prod`).
 5. GitHub Actions workflows for CI (`ci.yml`) and image publication to GHCR (`docker-publish.yml`).
 
 ## Open points

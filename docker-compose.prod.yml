@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: eazy_lingo
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  server:
+    image: ghcr.io/${IMAGE_OWNER}/eazy-lingo-server:${SERVER_IMAGE_TAG:-latest}
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@db:5432/eazy_lingo}
+      NODE_ENV: production
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL}
+      CLIENT_APP_URL: ${CLIENT_APP_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '4000:4000'
+    healthcheck:
+      test:
+        ['CMD-SHELL', 'curl -fsS http://localhost:4000/api/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  client:
+    image: ghcr.io/${IMAGE_OWNER}/eazy-lingo-client:${CLIENT_IMAGE_TAG:-latest}
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL}
+    depends_on:
+      - server
+    ports:
+      - '3000:3000'
+    restart: always
+
+volumes:
+  pgdata:
+
+networks:
+  default:
+    name: eazy-lingo-network

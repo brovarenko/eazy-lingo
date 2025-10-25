@@ -47,85 +47,45 @@ sudo chown ubuntu:ubuntu /opt/eazy-lingo
 cd /opt/eazy-lingo
 ```
 
-Create `.env` files:
+Clone (or pull) the repository so the compose files stay in sync:
 
-`server.env`
+```bash
+git clone git@github.com:<owner>/eazy-lingo.git .
+# or: git fetch origin main && git reset --hard origin/main
 ```
+
+Copy the example env file and fill in real secrets:
+
+```bash
+cp .env.production.example .env.production
+nano .env.production   # or your editor of choice
+```
+
+`/.env.production`
+```
+IMAGE_OWNER=<github-user-or-org>
+SERVER_IMAGE_TAG=latest
+CLIENT_IMAGE_TAG=latest
 DATABASE_URL=postgresql://postgres:postgres@db:5432/eazy_lingo
 GOOGLE_CLIENT_ID=...
 GOOGLE_CLIENT_SECRET=...
 GOOGLE_CALLBACK_URL=https://your-domain.com/api/auth/google/redirect
+CLIENT_APP_URL=https://your-domain.com
+NEXT_PUBLIC_API_BASE_URL=https://your-domain.com/api
 JWT_SECRET=...
 JWT_REFRESH_SECRET=...
-DEMO_USER_EMAIL=demo@eazy-lingo.dev
 ```
 
-`client.env`
-```
-NEXT_PUBLIC_API_BASE_URL=https://your-domain.com/api
-```
-
-> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client.
+> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client. Keep `.env.production` out of version control (already listed in `.gitignore`).
 
 ## 5. Compose file for EC2
-Create `docker-compose.ec2.yml`:
+The repository now ships `docker-compose.prod.yml`, so you no longer need a hand-crafted `docker-compose.yml` on the server. The file defines:
 
-```yaml
-services:
-  db:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: eazy_lingo
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+- `db`: Postgres 15 with a persistent `pgdata` volume.
+- `server`: pulls `ghcr.io/${IMAGE_OWNER}/eazy-lingo-server:${SERVER_IMAGE_TAG:-latest}` and wires health checks plus OAuth secrets from `.env.production`.
+- `client`: pulls the matching client image and forwards `NEXT_PUBLIC_API_BASE_URL`.
 
-  server:
-    image: ghcr.io/<owner>/eazy-lingo-server:latest
-    env_file:
-      - server.env
-    environment:
-      DATABASE_URL: postgresql://postgres:postgres@db:5432/eazy_lingo
-      NODE_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
-    ports:
-      - "4000:4000"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:4000/api/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    command: >
-      sh -c "pnpm --filter @eazy-lingo/server exec prisma migrate deploy &&
-             pnpm --filter @eazy-lingo/server exec prisma db seed &&
-             node dist/main.js"
-
-  client:
-    image: ghcr.io/<owner>/eazy-lingo-client:latest
-    env_file:
-      - client.env
-    environment:
-      NEXT_PUBLIC_API_BASE_URL: https://your-domain.com/api
-      NODE_ENV: production
-    depends_on:
-      - server
-    ports:
-      - "3000:3000"
-    command: ["pnpm", "--filter", "@eazy-lingo/client", "start"]
-
-volumes:
-  pgdata:
-```
-
-Replace `<owner>` with your GitHub user or organization.
+Because the file lives in git, removing stray copies on the EC2 host is safe—just `git pull` to pick up changes.
 
 ## 6. Authenticate to GHCR
 Log in using a GitHub Personal Access Token (with `read:packages` scope) or the built-in GitHub token if using GitHub Actions self-hosted runner:
@@ -140,14 +100,14 @@ Store credentials securely. Consider using AWS Secrets Manager or SSM Parameter 
 
 ```bash
 cd /opt/eazy-lingo
-docker compose -f docker-compose.ec2.yml pull
-docker compose -f docker-compose.ec2.yml up -d
+docker compose --env-file .env.production -f docker-compose.prod.yml pull
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
 Verify:
 
 ```bash
-docker compose -f docker-compose.ec2.yml ps
+docker compose --env-file .env.production -f docker-compose.prod.yml ps
 curl http://<ec2-ip>:4000/api/health
 curl http://<ec2-ip>:3000
 ```
@@ -166,23 +126,23 @@ Environment variables:
 - `REMOTE_DIR` to change the remote working directory.
 - `SSH_OPTIONS` for custom SSH flags (`-i key.pem`, `-o StrictHostKeyChecking=no`, etc.).
 
-> Ensure `docker-compose.ec2.yml` exists on the EC2 host along with `server.env` and `client.env`.
+> Ensure `docker-compose.prod.yml` and `.env.production` exist on the EC2 host. Copy `.env.production.example`, fill secrets, and keep the file outside git.
 
 ## 8. Updates & rollbacks
 
 To update to a new version (latest tag):
 
 ```bash
-docker compose -f docker-compose.ec2.yml pull
-docker compose -f docker-compose.ec2.yml up -d
+docker compose --env-file .env.production -f docker-compose.prod.yml pull
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
 To deploy a specific commit:
 
 ```bash
-sed -i 's/latest/<commit-sha>/' docker-compose.ec2.yml
-docker compose -f docker-compose.ec2.yml pull
-docker compose -f docker-compose.ec2.yml up -d
+sed -i 's/latest/<commit-sha>/' docker-compose.prod.yml
+docker compose --env-file .env.production -f docker-compose.prod.yml pull
+docker compose --env-file .env.production -f docker-compose.prod.yml up -d
 ```
 
 Keep previous tags to allow quick rollback.

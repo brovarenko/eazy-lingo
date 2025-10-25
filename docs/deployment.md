@@ -5,7 +5,7 @@
 - `.github/workflows/ci.yml` — runs on every push/PR. Steps:
   1. Check out repo, set up Node 20 + pnpm.
   2. `pnpm bootstrap`, `pnpm generate`, `pnpm lint`, and `pnpm --recursive build`.
-  3. Starts `docker-compose.dev.yml` and executes `pnpm health-check` (retry up to 5 times).
+  3. Starts `docker-compose.yml` and executes `pnpm health-check` (retry up to 5 times).
   4. Tears down the stack (always).
 
 - `.github/workflows/docker-publish.yml` — runs on pushes to `main` (and manually via workflow_dispatch).
@@ -27,8 +27,8 @@ To run with compose, override the build sections:
 
 ```bash
 docker compose \
-  -f docker-compose.yml \
-  --profile prod \
+  --env-file .env.production \
+  -f docker-compose.prod.yml \
   up -d \
   --pull always \
   --build

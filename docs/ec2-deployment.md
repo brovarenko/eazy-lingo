@@ -59,7 +59,7 @@ Copy the example env file and fill in real secrets, then prepare directories for
 ```bash
 cp .env.production.example .env.production
 nano .env.production   # or your editor of choice
-mkdir -p .certbot/etc .certbot/www
+mkdir -p nginx/certbot/conf nginx/certbot/www
 ```
 
 `/.env.production`
@@ -77,7 +77,7 @@ JWT_SECRET=...
 JWT_REFRESH_SECRET=...
 ```
 
-> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client. Keep `.env.production` (and `.certbot/`) out of version control—they are ignored via `.gitignore`.
+> Replace placeholders with real values. For production, generate random JWT secrets and configure a production OAuth client. Keep `.env.production` (and `nginx/certbot/*`) out of version control—they are ignored via `.gitignore`.
 
 ## 5. Issue HTTPS certificates
 TLS terminates inside the nginx container, so Let's Encrypt certs must be available before you start it:
@@ -87,8 +87,8 @@ cd /opt/eazy-lingo
 # Ensure nothing else listens on port 80 while requesting the cert.
 docker run --rm -it \
   -p 80:80 \
-  -v "$PWD/.certbot/etc:/etc/letsencrypt" \
-  -v "$PWD/.certbot/www:/var/www/certbot" \
+  -v "$PWD/nginx/certbot/conf:/etc/letsencrypt" \
+  -v "$PWD/nginx/certbot/www:/var/www/certbot" \
   certbot/certbot certonly \
   --standalone \
   -d app.example.com
@@ -98,8 +98,8 @@ Replace `app.example.com` with your domain. After success, certificates live in 
 
 ```bash
 docker run --rm -it \
-  -v "$PWD/.certbot/etc:/etc/letsencrypt" \
-  -v "$PWD/.certbot/www:/var/www/certbot" \
+  -v "$PWD/nginx/certbot/conf:/etc/letsencrypt" \
+  -v "$PWD/nginx/certbot/www:/var/www/certbot" \
   certbot/certbot renew && \
   docker compose --env-file .env.production -f docker-compose.prod.yml exec nginx nginx -s reload
 ```
